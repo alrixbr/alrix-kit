@@ -1,0 +1,17 @@
+{
+  "excludeDefault": false,
+  "tips": [
+    "/clear entre assuntos sem relação: contexto velho pesa em todo pedido",
+    "Na linha de status, a barra é o contexto até a compactação automática: âmbar em 60 %, vermelha em 85 %",
+    "\"cache frio\" na linha de status: o próximo pedido reprocessa a conversa inteira",
+    "/context mostra o que ocupa a janela agora",
+    "/usage mostra a taxa de cache e o que mais pesou no seu plano",
+    "/compact <foco> diz o que preservar ao resumir",
+    "/rewind restaura arquivos para antes de uma edição",
+    "! <comando> roda direto no shell da sessão",
+    "Esc interrompe o agente; Ctrl+O abre a conversa inteira e / procura nela",
+    "Alt+V cola uma imagem da área de transferência",
+    "Shift+Enter quebra a linha sem enviar",
+    "Segure Shift ao arrastar para selecionar texto do jeito do terminal"
+  ]
+}

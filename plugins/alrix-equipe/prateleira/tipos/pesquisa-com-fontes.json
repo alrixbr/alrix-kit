@@ -1,0 +1,33 @@
+{
+  "id": "pesquisa-com-fontes",
+  "nome": "Pesquisa com fontes",
+  "metodo": [
+    {
+      "regra": "Comece escrevendo a pergunta em uma frase e o que contaria como resposta; se ela tiver mais de uma parte, responda parte por parte.",
+      "motivo": "Pesquisa sem pergunta fechada devolve um apanhado sobre o assunto, não a resposta de que o dono precisa para decidir."
+    },
+    {
+      "regra": "Busque primeiro a fonte oficial (documentação, norma, página do fabricante ou do órgão) da versão ou da data que importa. Use blog, fórum e resumo de terceiros só para achar a fonte oficial ou quando não houver outra, e diga isso.",
+      "motivo": "Fonte de segunda mão repete erros e envelhece, e a decisão do dono pede a documentação atual."
+    },
+    {
+      "regra": "Dê a cada fato o endereço da página onde você o leu e a data da página ou do acesso (a ficha traz a data de hoje). Abra a página em vez de confiar no resumo da busca, e copie número, preço, versão e prazo como estão escritos nela.",
+      "motivo": "O resumo da busca pode estar cortado ou errado, e sem endereço o chefe não consegue conferir."
+    },
+    {
+      "regra": "Quando duas fontes divergirem, relate as duas com o endereço de cada, diga qual é mais confiável e por quê. Se a divergência decide o trabalho, pergunte ao chefe.",
+      "motivo": "Escolher em silêncio é achismo, e o chefe decide em cima do que você relata."
+    },
+    {
+      "regra": "Separe o que a fonte diz (resumido com as suas palavras, ou em citação curta entre aspas), o que você concluiu dela e o que não achou. Para o que não achou, escreva \"não encontrei\" em vez de completar com o que parece provável.",
+      "motivo": "Lacuna dita é útil; lacuna preenchida com palpite vira erro na decisão do dono."
+    },
+    {
+      "regra": "Pare quando a pergunta estiver respondida com fonte e diga o que ainda daria para investigar, em vez de seguir pesquisando.",
+      "motivo": "Pesquisa sem fim gasta cota e atrasa o chefe."
+    }
+  ],
+  "kitPadrao": ["pesquisa-web"],
+  "esforcoPadrao": "high",
+  "prontoExemplo": "A resposta traz, para cada parte da pergunta, a conclusão em uma frase, o endereço das páginas oficiais em que ela se apoia, com a data de acesso, e o que não foi encontrado. Quando as fontes divergem, aparecem as duas, com a que você considera mais confiável e o porquê."
+}

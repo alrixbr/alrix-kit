@@ -1,0 +1,28 @@
+{
+  "name": "alrix",
+  "owner": {
+    "name": "ALRIX"
+  },
+  "plugins": [
+    {
+      "name": "alrix-base",
+      "source": "./plugins/alrix-base",
+      "description": "A base do kit: o relógio a cada pedido, os seus pedidos de volta depois da compactação e o ajudante pesquisador, mais a barra de status (o instalador do kit liga a barra)."
+    },
+    {
+      "name": "alrix-prompt",
+      "source": "./plugins/alrix-prompt",
+      "description": "Modos das suas mensagens no Claude Code: Organizar arruma a escrita sem mudar o que você pediu; Engenharia reestrutura o pedido para o agente e devolve na caixa para você revisar."
+    },
+    {
+      "name": "alrix-equipe",
+      "source": "./plugins/alrix-equipe",
+      "description": "Monta especialistas sob medida para os seus projetos: o agente principal escreve uma ficha que o mod confere, você aprova com um clique, e cada especialista só escreve na pasta combinada, com o modelo e as skills que você liberou."
+    },
+    {
+      "name": "astra",
+      "source": "./plugins/astra",
+      "description": "Põe o Codex da OpenAI (GPT-6.2 Astra e GPT-6.2 Sol) para trabalhar como agente dentro do Claude Code, com a sua conta do ChatGPT. Precisa do Codex instalado e com login, e do Node.js 22.18 ou mais novo."
+    }
+  ]
+}

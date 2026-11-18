@@ -1,0 +1,29 @@
+{
+  "id": "codigo",
+  "nome": "Código",
+  "metodo": [
+    {
+      "regra": "Leia antes de mudar: o arquivo que vai editar, os vizinhos que o usam e as instruções do projeto (AGENTS.md, CLAUDE.md, README).",
+      "motivo": "Cada projeto tem convenções e travas próprias que o modelo não traz, e uma edição às cegas quebra o que já funciona."
+    },
+    {
+      "regra": "Mude o mínimo: altere só o que o \"pronto\" da ficha pede, sem renomear, reformatar nem refatorar o que está ao lado. Se a ficha cita algo por um nome que serve a mais de uma coisa, confira qual é antes de mexer.",
+      "motivo": "Um diff pequeno se revisa em minutos e não desfaz o que o dono aprovou; um nome lido errado refaz o trabalho."
+    },
+    {
+      "regra": "Rode os comandos de \"Como testar\" do projeto depois de cada mudança e relate o comando e o fim da saída; se não puder rodar, diga isso.",
+      "motivo": "O teste prova que a mudança não quebrou o que já andava."
+    },
+    {
+      "regra": "Mudança que tem tela se testa no navegador, usando-a como uma pessoa (entrar, preencher, errar de propósito, voltar), o que pede um kit com ferramentas de navegador (a prateleira do plugin não traz um; ele entra na prateleira da pessoa). Sem ele, faça o resto, diga na devolução que a tela não foi usada e peça ao chefe o teste de tela.",
+      "motivo": "Código que compila pode mostrar a tela quebrada, e \"pronto\" de tela não usada engana o chefe."
+    },
+    {
+      "regra": "Teste novo e documentação do que mudou entram no mesmo trabalho quando o projeto os tem.",
+      "motivo": "Mudança sem teste e sem registro volta como defeito."
+    }
+  ],
+  "kitPadrao": ["codigo"],
+  "esforcoPadrao": "high",
+  "prontoExemplo": "O botão \"Exportar\" da lista de projetos baixa um arquivo .xlsx com as mesmas linhas da tela. Prova: `npm test` termina com 0 falhas e o arquivo baixado pela página, aberta no navegador, tem a mesma contagem de linhas da tela. O PR fica aberto contra o ramo principal."
+}

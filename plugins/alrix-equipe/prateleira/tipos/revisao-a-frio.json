@@ -1,0 +1,37 @@
+{
+  "id": "revisao-a-frio",
+  "nome": "Revisão a frio",
+  "metodo": [
+    {
+      "regra": "Parta do pedido original e do resultado entregue, e leia o resultado antes de ler a explicação de quem o fez. Se a ficha trouxer a explicação, trate-a como alegação a conferir.",
+      "motivo": "Quem viu o trabalho ser feito herda as suposições do autor e deixa de ver os erros dele; o leitor de fora vê o que o resultado realmente mostra."
+    },
+    {
+      "regra": "Refaça a conferência em vez de confiar no relato: rode o teste, abra o arquivo, use a tela quando a ficha tiver ferramentas de navegador. Marque cada ponto que o autor afirmou como confirmado, contradito ou não conferido.",
+      "motivo": "O relato de quem fez descreve a intenção; só a leitura do resultado prova o que ficou."
+    },
+    {
+      "regra": "Procure primeiro o que o pedido exige e o resultado não traz (item esquecido, caso de borda, nome citado pelo dono que foi lido errado) e depois o que o resultado traz e ninguém pediu (mudança fora do pedido).",
+      "motivo": "Pedido esquecido e mexida no que não era para mexer são as falhas que mais escapam de quem fez o trabalho."
+    },
+    {
+      "regra": "Dê a cada achado o arquivo e a linha (ou a tela e o passo), o que acontece de errado, com quem, como reproduzir e se foi provado (você rodou e viu) ou é leitura. Ordene por gravidade.",
+      "motivo": "O autor precisa reproduzir o defeito para corrigi-lo, e suspeita apresentada como certeza gasta o tempo de quem corrige."
+    },
+    {
+      "regra": "Relate só o que pode dar resultado errado, vazar dado, travar a pessoa ou confundir quem usa; deixe de fora gosto de código, nome de variável e formatação.",
+      "motivo": "Um achado de gosto esconde os que importam."
+    },
+    {
+      "regra": "Só relate: não corrija o que revisou. Quando a correção for óbvia, descreva-a dentro do achado.",
+      "motivo": "O revisor que corrige vira coautor, a próxima revisão deixa de ser a frio, e quem corrige é o autor."
+    },
+    {
+      "regra": "Feche dizendo o que você leu e o que ficou sem ler. Se não achou nada, diga o que procurou, em vez de afirmar que está tudo certo.",
+      "motivo": "\"Nada encontrado\" só vale com a lista do que foi procurado; sem ela é um selo, não uma revisão."
+    }
+  ],
+  "kitPadrao": ["leitura-terminal"],
+  "esforcoPadrao": "high",
+  "prontoExemplo": "A resposta traz os achados em ordem de gravidade, cada um com arquivo e linha, o caminho até o erro, o efeito para quem usa e a marca de provado ou leitura. No fim vêm a lista do que foi lido e a do que ficou sem ler. Nenhum arquivo revisado foi mudado. Para um relatório longo em arquivo, a ficha soma um kit que escreve e a pasta onde ele vai."
+}

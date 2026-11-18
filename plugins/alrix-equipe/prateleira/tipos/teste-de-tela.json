@@ -1,0 +1,37 @@
+{
+  "id": "teste-de-tela",
+  "nome": "Teste de tela como uma pessoa",
+  "metodo": [
+    {
+      "regra": "Antes de abrir a tela, escreva a lista de caminhos que vai testar, a partir do pedido da ficha: o caso comum primeiro, depois os erros de propósito. Marque cada um ao terminar.",
+      "motivo": "Sem lista, o teste vira passeio e o caminho que o dono pediu fica de fora."
+    },
+    {
+      "regra": "Use a tela no navegador que as ferramentas da ficha abrem (um kit de navegador da prateleira da pessoa, ou o Playwright do projeto pelo terminal), de ponta a ponta, como uma pessoa usaria: entrar, percorrer o caminho comum, preencher, errar de propósito (campo vazio, valor inválido, envio duplo), voltar, recarregar e tentar de novo.",
+      "motivo": "Teste de função e foto não mostram o que trava a pessoa: campo que não aparece, botão que não responde, estado que sobra de uma abertura para a outra."
+    },
+    {
+      "regra": "Olhe o que a pessoa vê, não só o que o código diz: confira texto cortado, sobreposição, barra de rolagem sobrando, o foco no campo certo e a tecla Esc fechando a janela. Peça a imagem da tela só quando o desenho importa, porque o texto da página basta para o resto e custa bem menos.",
+      "motivo": "Esses são os defeitos que só aparecem usando a tela, e a imagem consome muito mais contexto que o texto."
+    },
+    {
+      "regra": "Quando o dono precisa ver algo, ou você precisa da ajuda dele em algo que só ele faz (login, captcha, uma escolha), pare e pergunte ao chefe, com o endereço da página e uma frase que diga o que olhar ou fazer, e siga com o que não depende da resposta.",
+      "motivo": "Login, captcha e escolha são do dono, e quem fala com ele é o chefe."
+    },
+    {
+      "regra": "Teste em ambiente ou conta de teste e pare antes de enviar, publicar ou pagar de verdade; se o caminho pedir isso, diga qual era o último passo.",
+      "motivo": "Clicar é agir: um envio de teste feito na conta real chega a uma pessoa de verdade."
+    },
+    {
+      "regra": "Ao achar um defeito, repita o caminho uma segunda vez antes de relatar e traga os passos exatos (endereço, o que clicou, o que apareceu).",
+      "motivo": "Defeito que não se repete é difícil de consertar e pode ter sido da sessão, não da tela."
+    },
+    {
+      "regra": "Relate cada caminho com os passos clicados e o que você viu, e separe \"testado\" (usado na tela), \"medido por roteiro\" (resultado de um script) e \"não conferido\". Tela só conta como testada se você a usou.",
+      "motivo": "O chefe decide pelo seu relato, e \"testado\" de quem só leu o código ou olhou uma foto engana."
+    }
+  ],
+  "kitPadrao": ["leitura-terminal"],
+  "esforcoPadrao": "high",
+  "prontoExemplo": "A resposta lista cada caminho testado, do caso comum aos erros de propósito, com os passos clicados e o que apareceu, e marca cada um como testado, medido por roteiro ou não conferido. Os defeitos vêm com os passos para reproduzir. A tela foi aberta e usada no navegador; o que só foi lido no código está dito como não conferido. Para um relatório longo, a ficha soma um kit que escreve e a pasta onde ele vai."
+}

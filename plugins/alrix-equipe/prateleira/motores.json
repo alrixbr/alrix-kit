@@ -1,0 +1,53 @@
+{
+  "motores": [
+    {
+      "id": "claude",
+      "nome": "Claude Code",
+      "modelos": [
+        {
+          "id": "sonnet",
+          "nome": "Sonnet 5.5",
+          "quandoUsar": "Ponto de partida de todo especialista: código, análise de dados, conteúdo, leitura de imagem e uso de ferramentas. Antes de trocar de modelo, suba o esforço até high; troque só quando um teste mostrar que ele não chega na qualidade pedida.",
+          "esforcos": ["low", "medium", "high", "xhigh", "max"],
+          "padrao": true
+        },
+        {
+          "id": "opus",
+          "nome": "Opus 5.5",
+          "quandoUsar": "Programação longa com muitos passos, refatoração grande e engenharia de sistema complexa, quando o Sonnet 5.5 em esforço alto não chegou lá. Custa o dobro do Sonnet por token; a ficha traz o motivo.",
+          "esforcos": ["low", "medium", "high", "xhigh", "max"]
+        },
+        {
+          "id": "fable",
+          "nome": "Fable 5.2",
+          "quandoUsar": "O mais capaz: sessão de horas, pesquisa profunda em vários passos e análise que vai até o documento pronto. Custa quatro vezes o Sonnet por token.",
+          "esforcos": ["low", "medium", "high", "xhigh", "max"]
+        }
+      ]
+    },
+    {
+      "id": "codex",
+      "nome": "Codex",
+      "modelos": [
+        {
+          "id": "gpt-6.2-sol",
+          "nome": "GPT-6.2 Sol",
+          "quandoUsar": "Ponto de partida no Codex: o modelo rápido do dia a dia (o catálogo do Codex o descreve como \"Fast, go-to model for coding and everyday work\"). Para tarefa de código de rotina ou em volume, entrega que será revisada e segunda opinião de outro fabricante, poupando o Astra para o que é difícil. Gasta a cota do Codex do dono.",
+          "esforcos": ["low", "medium", "high", "xhigh", "max", "ultra"]
+        },
+        {
+          "id": "gpt-6.2-astra",
+          "nome": "GPT-6.2 Astra",
+          "quandoUsar": "O mais capaz do Codex desde a versão 0.169.0 (o catálogo do Codex o descreve como \"Our most capable model for complex coding and professional work\" e passou o GPT-6 Astra a geração anterior). Para análise exigente, entrega complexa com requisito exato e projeto amplo. Diga na ficha o estilo de escrita que quer. Gasta a cota do Codex do dono.",
+          "esforcos": ["low", "medium", "high", "xhigh", "max", "ultra"]
+        },
+        {
+          "id": "gpt-6-astra",
+          "nome": "GPT-6 Astra",
+          "quandoUsar": "A geração anterior do Astra (o catálogo do Codex o descreve como \"Previous generation model for complex coding and professional work\"). Use só quando o Codex do dono ainda não oferece o GPT-6.2 Astra. Tende a resposta longa e a repetir frases; diga na ficha o estilo de escrita que quer. Gasta a cota do Codex do dono.",
+          "esforcos": ["low", "medium", "high", "xhigh", "max", "ultra"]
+        }
+      ]
+    }
+  ]
+}

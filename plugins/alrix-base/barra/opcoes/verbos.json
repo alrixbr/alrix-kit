@@ -1,0 +1,25 @@
+{
+  "mode": "replace",
+  "verbs": [
+    "Lendo o contexto",
+    "Relendo o pedido",
+    "Mapeando dependências",
+    "Seguindo a chamada",
+    "Cruzando fontes",
+    "Conferindo premissas",
+    "Separando causa de sintoma",
+    "Pesando alternativas",
+    "Delimitando o escopo",
+    "Medindo antes de mexer",
+    "Comparando com o que existe",
+    "Montando o plano",
+    "Ordenando as etapas",
+    "Isolando a falha",
+    "Reduzindo o problema",
+    "Checando a fonte",
+    "Revisando o que mudou",
+    "Fechando as pontas",
+    "Procurando a regra",
+    "Escrevendo"
+  ]
+}

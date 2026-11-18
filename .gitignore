@@ -1,0 +1,9 @@
+# Apoio de desenvolvimento e ensaios: fica só no computador de quem monta o kit.
+_dev/
+
+# Tipos que o Claude Code gera em cada computador quando carrega um plugin.
+**/.claude-plugin/types/
+
+# Sobras de teste.
+node_modules/
+*.log

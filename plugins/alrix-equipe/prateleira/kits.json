@@ -1,0 +1,104 @@
+{
+  "kits": [
+    {
+      "id": "leitura",
+      "nome": "Leitura",
+      "quandoUsar": "Para ler código, documentos e pastas e devolver um relatório, sem escrever nada.",
+      "ferramentas": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "escreve": false,
+      "shell": false
+    },
+    {
+      "id": "leitura-terminal",
+      "nome": "Leitura com terminal",
+      "quandoUsar": "Para ler código e pastas, comparar versões e rodar teste, sem editar nem gravar arquivo.",
+      "ferramentas": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash",
+        "PowerShell"
+      ],
+      "escreve": false,
+      "shell": true,
+      "notas": [
+        {
+          "regra": "Use o terminal para ler, comparar (git diff, git log) e rodar teste, e não para gravar, apagar, mover nem mudar o repositório.",
+          "motivo": "O kit não tem Edit nem Write, mas o mod não distingue leitura de escrita pelo texto de um comando de shell; a garantia é a regra."
+        }
+      ]
+    },
+    {
+      "id": "codigo",
+      "nome": "Código",
+      "quandoUsar": "Para mudar código num projeto: ler, editar, rodar o teste e conferir o resultado no terminal.",
+      "ferramentas": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Edit",
+        "Write",
+        "Bash",
+        "PowerShell"
+      ],
+      "escreve": true,
+      "shell": true,
+      "codex": {
+        "config": [
+          "sandbox_workspace_write.exclude_tmpdir_env_var=true",
+          "sandbox_workspace_write.exclude_slash_tmp=true"
+        ]
+      },
+      "notas": [
+        {
+          "regra": "Com Bash ou PowerShell o território vale só para Edit e Write; no shell, escreva apenas dentro do território da ficha.",
+          "motivo": "O mod barra Edit e Write fora do território, mas não consegue saber onde um comando de shell grava só lendo o texto dele."
+        }
+      ]
+    },
+    {
+      "id": "texto",
+      "nome": "Texto e documentos",
+      "quandoUsar": "Para escrever e revisar textos e documentos em arquivos (rascunho, README, instrução para agente), sem terminal.",
+      "ferramentas": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Edit",
+        "Write"
+      ],
+      "escreve": true,
+      "shell": false
+    },
+    {
+      "id": "pesquisa-web",
+      "nome": "Pesquisa na web",
+      "quandoUsar": "Para buscar e ler páginas e documentação oficial na internet.",
+      "ferramentas": [
+        "WebSearch",
+        "WebFetch"
+      ],
+      "escreve": false,
+      "shell": false,
+      "codex": {
+        "config": [
+          "web_search=\"live\""
+        ]
+      }
+    },
+    {
+      "id": "ajudantes",
+      "nome": "Abrir ajudantes",
+      "quandoUsar": "Só para um especialista que precisa mesmo abrir outros ajudantes; o padrão é que nenhum especialista abra.",
+      "ferramentas": [
+        "Agent"
+      ],
+      "escreve": false,
+      "shell": false
+    }
+  ]
+}

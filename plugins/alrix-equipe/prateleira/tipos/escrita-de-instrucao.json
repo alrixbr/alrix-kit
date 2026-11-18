@@ -1,0 +1,41 @@
+{
+  "id": "escrita-de-instrucao",
+  "nome": "Escrita de instrução para agente",
+  "metodo": [
+    {
+      "regra": "Abra o texto dizendo, em uma frase, para quem ele fala (agente principal, especialista, Codex) e quando é lido; um texto serve a um leitor.",
+      "motivo": "Texto com dois leitores serve mal aos dois, e o modelo não sabe o que vale para ele."
+    },
+    {
+      "regra": "Escreva cada regra com o que fazer, o motivo em uma frase e, quando não for óbvio, onde ela vale. Diga o que fazer em vez do que não fazer, e guarde \"nunca\" para o que é absoluto. Em vez de MAIÚSCULAS ou \"IMPORTANT\" repetidos, diga a consequência.",
+      "motivo": "Regra sem motivo é aplicada além da conta ou ignorada, proibição sem substituto deixa o agente sem saída, e ênfase empilhada faz o modelo exagerar."
+    },
+    {
+      "regra": "Separe com poucas tags o que é instrução, contexto, exemplo e dado, com os mesmos nomes em todos os arquivos e no máximo dois níveis. Dê de três a cinco exemplos diferentes entre si, dentro de uma tag de exemplo.",
+      "motivo": "A tag dá ao modelo a fronteira entre o que obedecer e o que só ler, e um exemplo único vira molde que ele copia."
+    },
+    {
+      "regra": "Deixe cada fato em um só lugar e faça os outros textos apontarem para ele. Antes de escrever, procure o mesmo fato em regras, skills, ficha e notas de kit e mantenha uma versão.",
+      "motivo": "Com dois textos divergentes o modelo escolhe um ao acaso, e a cópia esquecida envelhece sozinha."
+    },
+    {
+      "regra": "Deixe fora de texto que carrega sempre o que muda com o tempo (versão, estado de servidor, data): ponha numa nota lida na hora ou faça o sistema ler.",
+      "motivo": "O que carrega sempre disputa atenção com a tarefa em toda sessão, e o dado velho ensina errado."
+    },
+    {
+      "regra": "Escreva só o que o código ou a ferramenta faz hoje, conferido no código, na descrição da ferramenta ou numa execução. Se a instrução depende de uma mudança que ainda não entrou, marque no rascunho e avise o chefe.",
+      "motivo": "Instrução que descreve o que não existe leva o agente a tentar o que falha."
+    },
+    {
+      "regra": "Mantenha o idioma do arquivo; o que o dono lê na tela vai em português com acentos, em frases inteiras e sem jargão. Frase que o dono escreveu só muda onde ele pediu, e cada mudança de sentido entra no relatório como antes e depois.",
+      "motivo": "Trocar o idioma muda o que todas as sessões leem sem ganho medido, e o texto do dono é dele."
+    },
+    {
+      "regra": "Meça o tamanho do texto antes e depois e devolva os dois números; o que carrega sempre não cresce sem uma falha observada que o justifique.",
+      "motivo": "Sem a medida não se sabe se a revisão ajudou ou só pesou mais."
+    }
+  ],
+  "kitPadrao": ["codigo"],
+  "esforcoPadrao": "high",
+  "prontoExemplo": "O rascunho `rules/exemplo.md` abre dizendo a quem fala e quando é lido, traz cada regra com o motivo, não repete fato que já mora em outro arquivo e vem com o tamanho antes e depois. A resposta lista cada frase que mudou de sentido como antes e depois e diz o que não foi conferido contra o código."
+}

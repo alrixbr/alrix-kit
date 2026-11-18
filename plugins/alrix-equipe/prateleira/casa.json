@@ -1,0 +1,128 @@
+{
+  "listaLivre": [
+    "Explore",
+    "Plan",
+    "claude-code-guide",
+    "web-fetch",
+    "alrix-base:pesquisador"
+  ],
+  "naoToque": [
+    "**/.env",
+    "**/.env.local",
+    "**/.env.production",
+    "**/.env.development",
+    "**/*.cred",
+    "~/.claude/settings.json",
+    "~/.claude/settings.local.json",
+    "~/.claude/.credentials.json",
+    "~/.claude.json",
+    "~/.codex/auth.json"
+  ],
+  "comandosRecusados": [
+    {
+      "padrao": "(?:^|\\n)git(?:\\s+-[Cc]\\s+\\S+|\\s+--?[\\w-]+(?:=\\S*)?)*\\s+push(?=\\s|$)[^\\n]*(\\s--force(?![-\\w])|\\s-[a-zA-Z]*f[a-zA-Z]*(?![-\\w]))",
+      "motivo": "Push forçado reescreve o histórico do ramo no GitHub e pode apagar trabalho de outra sessão; abra um PR com um commit novo.",
+      "recusa": [
+        "git push --force origin main",
+        "git push -f origin main",
+        "git -C mod push --force",
+        "cd x && git push origin \"--force\""
+      ],
+      "passa": [
+        "git push --force-with-lease origin r9",
+        "git push -u origin r9",
+        "git commit -m \"sem git push --force aqui\"",
+        "grep -rn \"git push -f\" docs"
+      ]
+    },
+    {
+      "padrao": "(?:^|\\n)codex(?=\\s|$)(?![^\\n]*\\s(?:--help|-h|--version|-V)(?=\\s|$))(?!(?:\\s+(?:-[cmpasCi]|--(?:config|model|profile|ask-for-approval|sandbox|cd|image|enable|disable|add-dir|local-provider))\\s+\\S+|\\s+--?[\\w-]+(?:=\\S*)?)*\\s+(?:login|logout|mcp|plugin|completion|doctor|features|help|apply|a|debug|sandbox)(?=\\s|$))",
+      "motivo": "Rodar o Codex pelo terminal (codex exec, codex review, codex \"pedido\" e as outras formas que abrem uma conversa com o modelo) gasta a cota do dono sem cartão, sem ficha e fora do teto. Quem usa o Codex é um especialista do Codex, montado pelo chefe e chamado com Agent (com o plugin astra) ou com acionar (sem ele). A ajuda (--help) e a versão seguem livres.",
+      "recusa": [
+        "codex exec --model gpt-6.1-sol \"revise o projeto\"",
+        "npx @openai/codex exec x",
+        "C:\\tools\\codex.exe resume --last",
+        "cd x && codex e \"oi\"",
+        "codex -m gpt-6.1-sol exec \"revise\"",
+        "codex -c model=x exec \"revise\"",
+        "codex \"revise o projeto\"",
+        "codex review",
+        "\"C:/Program Files/OpenAI/codex.exe\" exec x",
+        "bash -c \"codex exec x\"",
+        "cmd /c codex exec x",
+        "out=\"$(codex exec \"revise\")\"",
+        "echo \"$(codex exec revise)\"",
+        "$saida = codex exec \"revise o projeto\"",
+        "timeout 600 codex exec \"revise\"",
+        "codex -c features.web_search_request=true exec \"pesquise\"",
+        "yarn dlx @openai/codex exec \"x\"",
+        "npm exec -- @openai/codex exec \"x\"",
+        "bunx @openai/codex@latest exec \"x\"",
+        "Measure-Command { codex exec \"x\" }",
+        "Start-Process codex -ArgumentList \"exec\",\"revise\" -Wait",
+        "wsl codex exec x",
+        "wsl -d Ubuntu -- codex exec x",
+        "ssh servidor codex exec x"
+      ],
+      "passa": [
+        "codex --version",
+        "codex --help",
+        "codex exec --help",
+        "codex -m gpt-x exec --help",
+        "codex login",
+        "codex mcp list",
+        "node mod/scripts/teste/codex-falso.mjs exec",
+        "grep -rn codex src",
+        "cat ~/.codex/config.toml",
+        "rg -n \"codex exec\" mod",
+        "git log -S \"codex resume\" --oneline",
+        "git commit -m \"o dublê troca o codex exec\"",
+        "grep -E \"(codex|claude)\" mod/README.md",
+        "grep -c codex mod/README.md",
+        "findstr /s codex *.ts",
+        "ls mod/hooks/{codex,equipe}.ts",
+        "$m = @{ codex = $true; claude = $false }",
+        "Select-String -Path mod/hooks/*.ts -Pattern 'spawn|codex'",
+        "codex login status",
+        "codex features list",
+        "where.exe codex",
+        "command -v codex",
+        "command -V codex",
+        "wsl --list"
+      ]
+    },
+    {
+      "padrao": "(?:^|\\n)claude(?=\\s|$)(?:\\s+(?!--(?=\\s|$))\\S+)*?\\s+(?:-[a-z]*p[a-z]*|--print(?:=\\S*)?)(?=\\s|$)",
+      "motivo": "Abrir outro Claude pelo terminal (claude -p) gasta a cota do dono sem cartão, sem ficha e fora do teto. Para mais uma cabeça, peça ao chefe um especialista; os comandos claude plugin validate e claude plugin test seguem livres.",
+      "recusa": [
+        "claude -p \"revise\" --model claude-fable-5-2",
+        "claude --print oi",
+        "claude.exe -p x",
+        "echo x | claude -p y",
+        "claude -cp \"revise\"",
+        "npx @anthropic-ai/claude-code -p \"revise\"",
+        "pwsh -Command \"claude -p x\"",
+        "out=\"$(claude -p \"revise o diff\")\"",
+        "$r = claude -p \"revise\"",
+        "nice -n 10 claude -p \"revise\"",
+        "if (claude -p \"x\") { 1 }",
+        "claude -pc \"x\"",
+        "claude --print=true \"x\""
+      ],
+      "passa": [
+        "claude plugin validate mod",
+        "claude plugin test mod",
+        "mkdir -p C:/Users/voce/.claude/x",
+        "ls ~/.claude -p",
+        "claude --version",
+        "grep -rn \"claude -p\" mod/",
+        "Select-String -Path mod/hooks/*.ts -Pattern 'claude -p'",
+        "git log --grep claude -p",
+        "git commit -m \"tira o claude -p do roteiro\"",
+        "claude mcp add srv -- python -m servidor -p 8080",
+        "claude mcp list",
+        "claude plugin validate mod 2>&1 | Select-Object -Last 20"
+      ]
+    }
+  ]
+}

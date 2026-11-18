@@ -1,0 +1,54 @@
+{
+  "name": "alrix-equipe",
+  "version": "0.5.0",
+  "description": "Monta especialistas sob medida para os seus projetos: o agente principal escreve uma ficha que o mod confere, você aprova com um clique, e cada especialista só escreve na pasta combinada, com o modelo e as skills que você liberou.",
+  "author": { "name": "ALRIX" },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "modo": {
+      "type": "string",
+      "title": "Modo",
+      "description": "aviso (o padrão): o mod confere as fichas e faz valer o território de cada especialista, e só anota os ajudantes sem ficha, sem recusar. barrar: recusa também todo ajudante sem ficha que não esteja na lista livre. desligado: o mod não muda nada.",
+      "default": "aviso",
+      "options": ["desligado", "aviso", "barrar"]
+    },
+    "comandosDoDono": {
+      "type": "string",
+      "title": "Ajudantes dos seus comandos",
+      "description": "Só vale no modo barrar. barrar (o padrão): o ajudante sem ficha é recusado também quando nasce de um comando que você digitou, como /review ou um workflow. liberar: enquanto o agente responde a um comando seu que chama o modelo, todo ajudante que ele abrir passa sem ficha e sem território, com todas as ferramentas, só com o Sonnet ou o Opus e o teto valendo; isso inclui o que o agente decidir abrir por conta própria nessa resposta, inclusive por causa de um texto malicioso que ele leia nela. A liberação acaba no fim da resposta ou quando chega outra mensagem.",
+      "default": "barrar",
+      "options": ["barrar", "liberar"]
+    },
+    "teto": {
+      "type": "number",
+      "title": "Teto do time",
+      "description": "Quantos especialistas o time tem no máximo, e quantos rodam ao mesmo tempo.",
+      "default": 10
+    },
+    "pisoGb": {
+      "type": "number",
+      "title": "Piso de memória (GB)",
+      "description": "Nenhum especialista nasce com menos memória livre do que isto, em GB.",
+      "default": 2
+    },
+    "orcamentoFicha": {
+      "type": "number",
+      "title": "Orçamento da ficha (caracteres)",
+      "description": "Tamanho máximo do texto de uma ficha, em caracteres.",
+      "default": 24000
+    },
+    "codexHome": {
+      "type": "string",
+      "title": "CODEX_HOME",
+      "description": "Só para quem usa o Codex: a pasta de configuração do Codex que o mod lê para saber o seu limite de uso e que os especialistas do Codex por roteiro usam. Vazio: a pasta padrão do Codex.",
+      "default": ""
+    },
+    "codexNativo": {
+      "type": "string",
+      "title": "Especialista do Codex",
+      "description": "Só para quem usa o Codex. auto (o padrão): com o plugin astra ligado, o especialista do Codex vira um agente do Claude Code, que o agente principal chama como chama os outros; sem o astra, ele roda por um roteiro à parte. roteiro: usa sempre o roteiro, que também aceita o esforço ultra.",
+      "default": "auto",
+      "options": ["auto", "roteiro"]
+    }
+  }
+}

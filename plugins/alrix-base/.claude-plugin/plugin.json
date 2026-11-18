@@ -1,0 +1,6 @@
+{
+  "name": "alrix-base",
+  "version": "0.1.0",
+  "description": "Base do harness: a data e a hora do relógio a cada pedido, os seus pedidos de volta depois da compactação e o ajudante pesquisador. Traz também a barra de status; o instalador do kit liga a barra.",
+  "author": { "name": "ALRIX" }
+}

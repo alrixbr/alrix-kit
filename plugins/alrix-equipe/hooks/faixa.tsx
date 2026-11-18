@@ -160,6 +160,7 @@ export async function desenharPainel($: EngineInterface, e: PainelInput, modo: s
       {fila.slice(-3).map(f => (
         <Text dimColor wrap="truncate-end">{`  ${f.regra}`}</Text>
       ))}
+      {fila.length ? <Text dimColor wrap="wrap">{'  Para uma valer, copie-a da fila (alrix-equipe/licoes-fila.json) para o licoes.json da sua prateleira.'}</Text> : null}
     </Box>
   )
 }

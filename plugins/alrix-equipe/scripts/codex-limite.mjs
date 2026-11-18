@@ -14,6 +14,7 @@
 import { execFile, spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const ESPERA_MS = 20_000
 
@@ -133,7 +134,9 @@ function limite(comando, prefixo, shell) {
   })
 }
 
-const souOPrincipal = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'))
+// fileURLToPath, e não o pathname da URL: numa pasta com espaço ou acento ("C:/Users/José Silva") o pathname vem
+// com %20 e %C3%A9, a comparação falha e o roteiro sai sem imprimir nada.
+const souOPrincipal = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))
 if (souOPrincipal) {
   const { comando, prefixo, shell } = executavel(process.argv[2])
   const [leitura, modelos] = await Promise.all([limite(comando, prefixo, shell), catalogo(comando, prefixo, shell)])

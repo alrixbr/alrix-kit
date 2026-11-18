@@ -1,4 +1,5 @@
 // ALRIX · barra de status: desenho dos limites do plano (barras, faixas de cor e a hora em que a janela volta).
+import { TRACO_VAZIO } from './comum.mjs';
 
 /** Cor por faixa de uso: normal na tinta, âmbar a partir de 60 %, vermelho a partir de 85 %. */
 export function faixa(cor, pct) {
@@ -11,7 +12,7 @@ export function faixa(cor, pct) {
 export function barra(cor, pct, celulas, pinta) {
   const p = Math.max(0, Math.min(100, Number(pct) || 0));
   const cheias = p > 0 ? Math.max(1, Math.round((p * celulas) / 100)) : 0;
-  return `${(pinta ?? faixa(cor, p))('━'.repeat(cheias))}${cor.lineSoft('━'.repeat(celulas - cheias))}`;
+  return `${(pinta ?? faixa(cor, p))('━'.repeat(cheias))}${cor.lineSoft(TRACO_VAZIO.repeat(celulas - cheias))}`;
 }
 
 const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];

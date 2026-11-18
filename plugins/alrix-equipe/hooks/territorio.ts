@@ -1063,14 +1063,31 @@ export function programaDoComando(comando: string): string {
  * Nomes que nenhum especialista grava, apaga ou move pelo terminal, citados em qualquer ponto do comando: as
  * configurações do Claude Code, os arquivos de login, e as pastas de mods, regras e ganchos.
  */
-export const SENSIVEL = /settings(?:\.local)?\.json|\.credentials\.json|(?:^|[\\/\s"'=])auth\.json|\.git-credentials|\.netrc\b|[\\/]\.ssh(?:[\\/]|\b)|\.claude[\\/](?:dev-)?mods\b|\.claude[\\/](?:rules|hooks)\b|alrix-equipe[\\/]prateleira\b/i
+export const SENSIVEL = /settings(?:\.local)?\.json|\.credentials\.json|(?:^|[\\/\s"'=])auth\.json|\.git-credentials|\.netrc\b|[\\/]\.ssh(?:[\\/]|\b)|\.claude[\\/](?:dev-)?mods\b|\.claude[\\/](?:rules|hooks)\b|alrix-equipe[\\/]prateleira\b|(?:^|[\\/\s"'=])\.mcp\.json\b/i
 
 /**
- * As pastas do Claude Code que só o chefe muda: os mods carregados, as regras, os ganchos e a prateleira da pessoa.
+ * O que é do Claude Code e só o chefe muda, dentro da pasta de configuração: o código que roda sozinho (mods,
+ * plugins instalados, ganchos, a barra do kit), o que vira instrução de toda sessão (regras, agentes, skills,
+ * comandos, CLAUDE.md), os ajustes, o login e a prateleira da pessoa. Vale para a escrita por ferramenta (Write,
+ * Edit) e pelo terminal, e "ampliar" não abre nenhum deles.
  * `config` é a pasta de configuração (CLAUDE_CONFIG_DIR); ausente, a .claude da pasta do usuário.
  */
 export const pastasProtegidas = (casa: string, config = `${casa}/.claude`): string[] =>
-  ['mods', 'dev-mods', 'rules', 'hooks', 'alrix-equipe/prateleira'].map(p => normalizar(`${config}/${p}`))
+  [
+    'mods', 'dev-mods', 'plugins', 'rules', 'hooks', 'agents', 'skills', 'commands', 'alrix-kit', 'alrix-equipe/prateleira',
+    'settings.json', 'settings.local.json', '.credentials.json', 'CLAUDE.md',
+  ].map(p => normalizar(`${config}/${p}`))
+
+/**
+ * O arquivo de configuração do Claude Code que mora dentro de um projeto e roda código por conta própria: os ajustes
+ * (`.claude/settings.json` e `.claude/settings.local.json`, que trazem ganchos), a pasta de ganchos (`.claude/hooks`)
+ * e os servidores MCP (`.mcp.json`). Dentro do território ou não, nenhum especialista os escreve: um gancho gravado
+ * ali roda na sessão seguinte, fora de qualquer porteiro. Devolve o trecho que casou, ou undefined.
+ */
+export function configDoClaudeNoProjeto(caminho: string): string | undefined {
+  const alvo = normalizar(caminho)
+  return /(?:^|\/)\.claude\/(?:settings(?:\.local)?\.json$|hooks(?:\/|$))/i.exec(alvo)?.[0].replace(/^\/|\/$/g, '') ?? (/(?:^|\/)\.mcp\.json$/i.test(alvo) ? '.mcp.json' : undefined)
+}
 
 /** O caminho como o shell o escreve, na forma do mod: "/c/x" do Git Bash vira "c:/x"; $HOME e afins viram a casa. */
 export function caminhoDoShell(caminho: string, casa: string): string {
@@ -1152,7 +1169,7 @@ export function decidirShell(a: {
   const livres = a.livres.map(normalizar)
   const resolver = resolverDoShell(a.casa, a.cwd)
   const proibido = (abs: string): string | undefined =>
-    a.naoToque.find(t => dentro(abs, t)) ?? padraoQueCasa(abs, a.casaNaoToque, a.casa) ?? protegidas.find(t => dentro(abs, t))
+    a.naoToque.find(t => dentro(abs, t)) ?? padraoQueCasa(abs, a.casaNaoToque, a.casa) ?? protegidas.find(t => dentro(abs, t)) ?? configDoClaudeNoProjeto(abs)
   const territorio = a.territorio.join(', ') || 'nenhum: você só lê'
   for (const e of r.escritas) {
     if (e.incerto) continue

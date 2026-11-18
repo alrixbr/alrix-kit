@@ -1,6 +1,6 @@
 {
   "name": "astra",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Põe o Codex da OpenAI (GPT-6.2 Astra e GPT-6.2 Sol) para trabalhar como agente dentro do Claude Code, com a sua conta do ChatGPT. Precisa do Codex instalado e com login, e do Node.js 22.18 ou mais novo.",
   "author": {
     "name": "ALRIX"

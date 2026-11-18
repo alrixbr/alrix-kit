@@ -6,6 +6,7 @@ import {
   caminhoDoShell,
   casaPadrao,
   codigoDoComando,
+  configDoClaudeNoProjeto,
   decidirShell,
   comandoRecusado,
   cruzamento,
@@ -350,9 +351,50 @@ test('sonda da rodada 5, cerca: o dia a dia passa (PowerShell com -ItemType, -Va
 test('cerca: com o caminho real resolvido no disco, a escrita por uma junção vale onde cai', () => {
   const comando = 'echo x > C:/Users/pessoa/projetos/proj/docs/j/CLAUDE.md'
   expect(sondaCerca(CEN_B, comando)).toBe(true) // só pelo texto, não se vê
-  const reais = new Map([['c:/users/pessoa/projetos/proj/docs/j/claude.md', 'c:/users/pessoa/.claude/claude.md']])
+  const reais = new Map([['c:/users/pessoa/projetos/proj/docs/j/claude.md', 'c:/users/pessoa/outra/claude.md']])
   const r = decidirShell({ comando, casa: SONDA_CASA, casaNaoToque: SONDA_NAO_TOQUE, livres: [], ...CEN_B, reais })
   expect(r.ok ? '' : r.motivo).toContain('passa por um link ou junção')
+  // a junção que cai no que é do Claude Code (o CLAUDE.md da pasta de configuração) é recusada como lugar do chefe
+  const noClaude = new Map([['c:/users/pessoa/projetos/proj/docs/j/claude.md', 'c:/users/pessoa/.claude/claude.md']])
+  const r2 = decidirShell({ comando, casa: SONDA_CASA, casaNaoToque: SONDA_NAO_TOQUE, livres: [], ...CEN_B, reais: noClaude })
+  expect(r2.ok ? '' : `${r2.saida}: ${r2.motivo}`).toContain('pare: o comando grava em c:/users/pessoa/.claude/claude.md')
+})
+
+test('lista da casa: as formas novas (chaves, arquivos de inicialização do terminal e .env de ambiente) casam com o caminho', () => {
+  const casa = 'C:/Users/teste'
+  const casos: [string, string][] = [
+    ['c:/users/teste/.ssh/authorized_keys', '~/.ssh'],
+    ['c:/users/teste/.aws/credentials', '~/.aws'],
+    ['c:/users/teste/.bashrc', '~/.bashrc'],
+    ['c:/users/teste/.gitconfig', '~/.gitconfig'],
+    ['c:/users/teste/.codex/config.toml', '~/.codex/config.toml'],
+    ['c:/users/teste/documents/powershell/microsoft.powershell_profile.ps1', '**/*_profile.ps1'],
+    ['c:/proj/.env.staging', '**/.env.staging'],
+    ['c:/proj/app/.env.production.local', '**/.env.*.local'],
+  ]
+  for (const [caminho, padrao] of casos) expect([caminho, casaPadrao(caminho, padrao, casa)]).toEqual([caminho, true])
+  // o que só parece: o exemplo de .env que vai para o repositório e um roteiro qualquer de PowerShell
+  expect(casaPadrao('c:/proj/.env.example', '**/.env.*.local', casa)).toBe(false)
+  expect(casaPadrao('c:/proj/scripts/perfil.ps1', '**/*_profile.ps1', casa)).toBe(false)
+  expect(casaPadrao('c:/users/teste/.sshx/a', '~/.ssh', casa)).toBe(false)
+})
+
+test('cerca: o que é do Claude Code na pasta de configuração e no projeto não se grava pelo terminal, nem dentro do território', () => {
+  const dentroDaConfig = { ...CEN_B, territorio: ['c:/users/pessoa'] }
+  for (const alvo of ['plugins/cache/alrix/x/hooks/a.ts', 'agents/novo.md', 'skills/nova/SKILL.md', 'commands/c.md', 'alrix-kit/barra/statusline.mjs', 'CLAUDE.md']) {
+    const r = decidirShell({ comando: `cp a.txt C:/Users/pessoa/.claude/${alvo}`, casa: SONDA_CASA, casaNaoToque: SONDA_NAO_TOQUE, livres: [], ...dentroDaConfig })
+    expect([alvo, r.ok ? 'passou' : r.saida]).toEqual([alvo, 'pare'])
+  }
+  // a pasta de configuração de CLAUDE_CONFIG_DIR vale no lugar da ~/.claude
+  const outra = decidirShell({ comando: 'cp a.txt D:/perfil/plugins/x.ts', casa: SONDA_CASA, casaNaoToque: SONDA_NAO_TOQUE, livres: [], ...CEN_B, territorio: ['d:/perfil'], config: 'D:/perfil' })
+  expect(outra.ok ? 'passou' : outra.saida).toBe('pare')
+  // no projeto: os ganchos e os servidores MCP
+  expect(configDoClaudeNoProjeto('c:/proj/.claude/settings.local.json')).toBe('.claude/settings.local.json')
+  expect(configDoClaudeNoProjeto('c:/proj/.claude/hooks/antes.mjs')).toBe('.claude/hooks')
+  expect(configDoClaudeNoProjeto('c:/proj/pacote/.mcp.json')).toBe('.mcp.json')
+  expect(configDoClaudeNoProjeto('c:/proj/.claude/notas.md')).toBeUndefined()
+  expect(configDoClaudeNoProjeto('c:/proj/src/hooks/useX.ts')).toBeUndefined()
+  expect(configDoClaudeNoProjeto('c:/proj/settings.json')).toBeUndefined()
 })
 
 test('espera, roteiro embutido em node ou python: o que só cita sleep e laço passa; o que dorme de verdade barra', () => {

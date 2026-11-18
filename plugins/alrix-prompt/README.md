@@ -69,7 +69,7 @@ Cada mensagem tratada é uma chamada ao Sonnet 5.5 na conta da sessão. Medido e
 
 ## Registro de uso
 
-Cada mensagem tratada deixa uma linha em `~/.claude/alrix-prompt/uso/<sessão>.jsonl`: a hora, o modo, o que aconteceu (enviada, na caixa, revisada, trocada pela original, descartada, cancelada), o tipo do motivo de um descarte, o tempo, os tokens, o tamanho em caracteres e quantas lacunas foram apontadas. **O texto da mensagem não é gravado**, nem o pedaço dela que o aviso na tela mostra. Nada sai do PC.
+Cada mensagem tratada deixa uma linha em `alrix-prompt/uso/<sessão>.jsonl`, dentro da pasta de configuração do Claude Code (normalmente `~/.claude`; se você usa a variável `CLAUDE_CONFIG_DIR`, a pasta dela): a hora, o modo, o que aconteceu (enviada, na caixa, revisada, trocada pela original, descartada, cancelada), o tipo do motivo de um descarte, o tempo, os tokens, o tamanho em caracteres e quantas lacunas foram apontadas. **O texto da mensagem não é gravado**, nem o pedaço dela que o aviso na tela mostra. Nada sai do PC.
 
 - Desligar: a variável de ambiente `ALRIX_PROMPT_REGISTRO=0`.
 

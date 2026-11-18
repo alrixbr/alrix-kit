@@ -15,7 +15,8 @@ import { existsSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import {
-  NEGRITO, RST, ajustesDaPessoa, largura, lerEntrada, lerJson, marca, milhares, pastaDeConfiguracao, pintores, temaAtual,
+  NEGRITO, RST, TRACO_VAZIO, ajustesDaPessoa, largura, lerEntrada, lerJson, marca, milhares, pastaDeConfiguracao, pintores,
+  temaAtual,
 } from './comum.mjs';
 import { barra, faixa, quando } from './limites.mjs';
 
@@ -122,7 +123,7 @@ function segmentoContexto(cor, dados, ajustes) {
   const pct = Math.min(100, Math.floor((usado * 100) / janela));
   const cheias = usado > 0 ? Math.max(1, Math.round((pct * CELULAS) / 100)) : 0;
   const pinta = faixa(cor, pct);
-  return `${pinta('━'.repeat(cheias))}${cor.lineSoft('━'.repeat(CELULAS - cheias))} `
+  return `${pinta('━'.repeat(cheias))}${cor.lineSoft(TRACO_VAZIO.repeat(CELULAS - cheias))} `
     + `${pinta(milhares(usado))}${cor.muted(`/${milhares(janela)}`)}`;
 }
 

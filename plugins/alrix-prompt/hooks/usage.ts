@@ -1,6 +1,6 @@
 // O registro de uso: uma linha por mensagem tratada, sem o texto dela, para medir o mod com o uso de verdade (quanto é
 // descartado e por quê, quantas vezes o dono troca pela original, quanto demora). Um arquivo por sessão, em
-// ~/.claude/alrix-prompt/uso/<sessão>.jsonl; `node eval/uso.ts` soma todos. ALRIX_PROMPT_REGISTRO=0 desliga.
+// <pasta de configuração do Claude Code>/alrix-prompt/uso/<sessão>.jsonl. ALRIX_PROMPT_REGISTRO=0 desliga.
 // Falhar aqui nunca segura a mensagem.
 import type { EngineInterface } from 'claude-code'
 
@@ -50,9 +50,12 @@ export const useLineOf = (now: number, done: AlrixPromptLast): UseLine => ({
 
 async function fileOf($: EngineInterface): Promise<string | undefined> {
   if ((await $.env.get('ALRIX_PROMPT_REGISTRO')) === '0') return undefined
+  // A pasta de configuração do Claude Code em uso: CLAUDE_CONFIG_DIR, ou a .claude da pasta do usuário.
+  const config = ((await $.env.get('CLAUDE_CONFIG_DIR')) ?? '').trim()
   const home = (await $.env.get('USERPROFILE')) ?? (await $.env.get('HOME'))
-  if (home === undefined || home === '') return undefined
-  return `${home.replace(/\\/g, '/')}/.claude/alrix-prompt/uso/${await $.session.id()}.jsonl`
+  const base = config !== '' ? config : home === undefined || home === '' ? undefined : `${home}/.claude`
+  if (base === undefined) return undefined
+  return `${base.replace(/\\/g, '/').replace(/\/+$/, '')}/alrix-prompt/uso/${await $.session.id()}.jsonl`
 }
 
 /** Acrescenta a linha desta mensagem ao arquivo da sessão. */

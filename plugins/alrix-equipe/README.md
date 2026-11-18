@@ -9,11 +9,13 @@ Para montar um especialista, o chefe escreve uma "ficha": o projeto, o tipo de t
 Enquanto eles trabalham, o mod faz valer estes limites:
 
 - nenhum especialista escreve fora da pasta combinada na ficha;
-- nenhum especialista escreve nos arquivos de configuração do Claude Code nem nos seus arquivos de segredo (`.env`, credenciais);
+- nenhum especialista escreve nos arquivos de configuração do Claude Code (ajustes, ganchos, plugins, regras, agentes, skills, servidores MCP), nem nos seus arquivos de segredo (`.env`, credenciais, chaves do SSH), nem nos arquivos que o terminal roda ao abrir;
 - nenhum especialista abre outros ajudantes sem ter recebido esse poder na ficha;
 - nenhum especialista abre o Codex ou outro Claude pelo terminal, o que gastaria a sua cota sem você ver;
 - nenhum especialista fica preso num laço de espera no terminal;
 - o time tem no máximo 10 especialistas, e nenhum nasce com menos de 2 GB de memória livre no computador.
+
+**Até onde esses limites vão.** A escrita pelas ferramentas de arquivo (Write e Edit) é conferida pelo caminho real no disco, com links e junções seguidos. No terminal é diferente: o mod lê o texto do comando e recusa o que grava, apaga ou move às claras fora da pasta combinada. Isso segura o engano comum, mas não é um sandbox. Um roteiro, um programa que grava por conta própria (`node -e`, `python -c`, `npm run`) e um caminho montado numa variável passam sem ser vistos, e a saída de um comando (`>`) pode cair em qualquer arquivo da pasta do projeto. Para um trabalho que não pode escrever fora de jeito nenhum, monte o especialista com um kit sem terminal (`leitura` ou `texto`). A leitura da memória livre funciona no Windows e no Linux; no macOS o piso de 2 GB não é conferido.
 
 O modelo padrão é o Sonnet. O Opus também pode ser escolhido. O Fable só entra quando você mesmo pede na conversa, e o Haiku não entra.
 
@@ -59,7 +61,7 @@ Os especialistas só usam as skills que você aprovou. Isso vale para as skills 
 2. Peça: "aprove a skill tal para os especialistas". O mod mostra um cartão com as skills pedidas e para que cada uma serve.
 3. Só quando você escolhe "Aprovar" a skill entra na sua prateleira, junto com a impressão digital do arquivo dela.
 
-Se o arquivo da skill mudar depois da aprovação (por exemplo, quando o plugin dela é atualizado), ela sai dos especialistas e o cardápio avisa. Para ela voltar, aprove de novo. Nem o chefe nem um especialista conseguem escrever no arquivo das skills aprovadas: ele só muda pelo cartão.
+Se o arquivo da skill mudar depois da aprovação (por exemplo, quando o plugin dela é atualizado), ela sai dos especialistas e o cardápio avisa. Para ela voltar, aprove de novo. O arquivo das skills aprovadas só muda pelo cartão: pelas ferramentas de arquivo, nem o chefe nem um especialista escrevem nele, e pelo terminal o especialista é recusado. O terminal do chefe não é conferido pelo mod.
 
 ## Onde ficam os seus arquivos
 
@@ -72,7 +74,7 @@ A sua prateleira soma à que vem no plugin. Nela podem ficar:
 
 - `projetos/<nome>.json`: as fichas dos seus projetos (o `gravar_projeto` grava aqui);
 - `aprovados.json`: as skills que você aprovou (a ferramenta `skills` grava aqui);
-- `licoes.json`: regras que valem para os seus especialistas, cada uma com o motivo;
+- `licoes.json`: regras que valem para os seus especialistas, cada uma com o motivo. O que um agente propõe (`propor_licao`) fica numa fila, em `alrix-equipe/licoes-fila.json` na pasta de configuração, e só passa a valer quando você copia a regra para este arquivo, com um `id` e o campo `vale`;
 - `kits.json` e `tipos/<nome>.json`: conjuntos de ferramentas e tipos de trabalho seus;
 - `casa.json`: a sua lista livre de ajudantes, os caminhos que nenhum especialista escreve e os comandos que nenhum deles roda.
 
@@ -107,7 +109,7 @@ Se você tem o Codex instalado e com login feito, o cardápio oferece também os
 
 O especialista do Codex trabalha de um destes dois jeitos, e o cardápio diz qual vale na sua sessão:
 
-- **Com o plugin astra ligado (o melhor jeito):** o especialista do Codex vira um agente do Claude Code, como os outros. O chefe o chama do mesmo jeito que chama um especialista do Claude, com a mesma ficha, o mesmo cartão e os mesmos limites. O Codex trabalha na pasta do projeto e, quando termina a vez, o mod confere o que ele gravou e avisa o chefe de cada arquivo que mudou fora da pasta combinada. O esforço vai de baixo a máximo.
+- **Com o plugin astra ligado (o melhor jeito):** o especialista do Codex vira um agente do Claude Code, como os outros. O chefe o chama do mesmo jeito que chama um especialista do Claude, com a mesma ficha e o mesmo cartão. Os limites mudam: quem segura o Codex é o sandbox dele, que só deixa gravar na pasta do projeto inteira, e não os porteiros do mod. Dentro do Codex não valem os comandos recusados, a trava de espera nem a lista do que nenhum especialista escreve. Quando ele termina a vez, o mod confere pelo git o que foi gravado e avisa o chefe de cada arquivo que mudou fora da pasta combinada; arquivo que o git ignora (um `.env`, por exemplo) e projeto sem git ficam fora dessa conferência. O esforço vai de baixo a máximo.
 - **Sem o astra:** o especialista do Codex roda por um roteiro à parte. O chefe o põe para trabalhar com a ferramenta `acionar`, e o mod avisa quando ele termina. Esse jeito aceita também o esforço `ultra`.
 
 Para usar o primeiro jeito, instale o plugin astra, que vem no mesmo kit, e abra o Claude Code de novo. O instalador do kit já instala o astra quando encontra o Codex no computador; se você instalou o Codex depois, rode `claude plugin install astra@alrix`. O astra precisa do Codex com login feito e do Node.js 22.18 ou mais novo; o README dele explica o resto. Se você preferir o roteiro mesmo com o astra ligado, ponha a opção do especialista do Codex em `roteiro`:
@@ -120,7 +122,7 @@ No Linux e no macOS, o mesmo comando começa com `echo`. Para voltar ao padrão,
 
 ## O que há na prateleira do plugin
 
-- `casa.json`: a lista livre de ajudantes, os caminhos que nenhum especialista escreve (arquivos `.env`, credenciais e as configurações do Claude Code e do Codex) e os comandos recusados (push forçado e abrir o Codex ou outro Claude pelo terminal).
+- `casa.json`: a lista livre de ajudantes, os caminhos que nenhum especialista escreve (arquivos `.env`, credenciais, chaves do SSH, os arquivos que o terminal roda ao abrir e as configurações do Claude Code e do Codex) e os comandos recusados (push forçado e abrir o Codex ou outro Claude pelo terminal).
 - `kits.json`: os conjuntos de ferramentas. `leitura` só lê; `leitura-terminal` lê e roda comandos; `codigo` lê, escreve e roda comandos; `texto` lê e escreve sem terminal; `pesquisa-web` busca na web; `ajudantes` deixa o especialista abrir ajudantes.
 - `tipos/`: os tipos de trabalho (código, conteúdo, escrita de instruções, pesquisa com fontes, revisão a frio e teste de tela), cada um com o método e o motivo de cada passo.
 - `licoes.json`: as regras que todo especialista recebe, cada uma com o motivo.

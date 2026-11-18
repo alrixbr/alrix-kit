@@ -31,6 +31,7 @@ const MODELOS_PADRAO = ['claude-opus-5-5', 'claude-fable-5-2', 'claude-sonnet-5-
 const PLUGINS_DO_KIT = ['alrix-base', 'alrix-equipe', 'alrix-prompt', 'astra']; // só se o kit não trouxer marketplace.json
 const VERSAO_MINIMA_INSTALAR = '2.1.275'; // `claude plugin install <plugin> --marketplace <origem>`
 const VERSAO_MINIMA_JANELA_POR_MODELO = '2.1.288'; // autoCompactWindow dentro de modelSettings
+const NODE_MINIMO_ASTRA = '22.18.0'; // a ponte do astra roda TypeScript direto no Node
 
 // ---------------------------------------------------------------------------------------------------------------
 // Texto para a pessoa
@@ -76,7 +77,8 @@ function lerOpcoes(argv) {
     simular: false, desfazer: false, ajuda: false, trocarBarra: false, verbos: false, dicas: false, tema: null,
     janela: JANELA_PADRAO, trocarJanela: false, modelos: MODELOS_PADRAO, plugins: null, sem: [], github: null, erros: [],
   };
-  const lista = (v) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+  // Vírgula ou espaço: o PowerShell entrega "a,b" como uma lista e a repassa como "a b".
+  const lista = (v) => String(v ?? '').split(/[,;\s]+/).map((x) => x.trim()).filter(Boolean);
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     const valor = () => {
@@ -253,7 +255,7 @@ function lerKit(opcoes) {
 const ARQUIVOS_DA_BARRA = ['comum.mjs', 'limites.mjs', 'statusline.mjs', 'subagentes.mjs', 'paleta.json'];
 const TEMAS = { escuro: { arquivo: 'alrix.json', nome: 'custom:alrix' }, claro: { arquivo: 'alrix-papel.json', nome: 'custom:alrix-papel' } };
 
-function pluginsEscolhidos(opcoes, kit, comCodex) {
+function pluginsEscolhidos(opcoes, kit, comCodex, node = process.versions.node) {
   const pedidos = opcoes.plugins ?? kit.doKit;
   const escolhidos = [];
   const fora = [];
@@ -261,7 +263,9 @@ function pluginsEscolhidos(opcoes, kit, comCodex) {
     if (opcoes.sem.includes(nome)) fora.push({ nome, motivo: 'você pediu para deixar de fora' });
     else if (!kit.doKit.includes(nome)) fora.push({ nome, motivo: 'não existe neste kit' });
     else if (nome === 'astra' && !comCodex) fora.push({ nome, motivo: 'o Codex não está neste computador' });
-    else escolhidos.push(nome);
+    else if (nome === 'astra' && !versaoMaiorOuIgual(node, NODE_MINIMO_ASTRA)) {
+      fora.push({ nome, motivo: `ele precisa do Node ${NODE_MINIMO_ASTRA.replace(/\.0$/, '')} ou mais novo, e este é o ${node}; atualize em https://nodejs.org e rode de novo` });
+    } else escolhidos.push(nome);
   }
   return { escolhidos, fora };
 }
@@ -406,7 +410,8 @@ function instalar(opcoes) {
     copyFileSync(arquivoAjustes, join(cfg, nomeCopia));
     titulo('Cópia de segurança');
     ok(`Cópia do settings.json guardada em ${comBarra(join(cfg, nomeCopia))}`);
-    if (!copiaFeita) copiaFeita = nomeCopia; // a primeira cópia é a "de antes" do --desfazer
+    // Só a cópia da primeira instalação é a "de antes" do --desfazer: uma cópia feita depois já traz as chaves do kit.
+    if (!registro) copiaFeita = nomeCopia;
   }
 
   // ---- plugins
@@ -415,12 +420,13 @@ function instalar(opcoes) {
   const origemTexto = kit.ehPasta ? comBarra(kit.origem) : kit.origem;
   const marketplaceJaTinha = ler(lido.ajustes, ['extraKnownMarketplaces', kit.marketplace]).tem;
   const novosPlugins = [];
+  let marketplaceConferido = false;
   if (!escolhidos.length) nota('Nenhum plugin escolhido.');
   for (const nome of escolhidos) {
     const id = `${nome}@${kit.marketplace}`;
     const jaEstava = id in instaladosAntes;
     if (opcoes.simular) {
-      nota(`${jaEstava ? 'já instalado, só conferiria' : 'instalaria'}: claude plugin install ${nome} --marketplace ${origemTexto} --scope user`);
+      nota(jaEstava ? `já instalado, conferiria se há versão nova: claude plugin update ${id}` : `instalaria: claude plugin install ${nome} --marketplace ${origemTexto} --scope user`);
       continue;
     }
     const r = claude(['plugin', 'install', nome, '--marketplace', kit.origem, '--scope', 'user']);
@@ -428,12 +434,22 @@ function instalar(opcoes) {
       aviso(`${nome}: o Claude Code não conseguiu instalar. Ele disse: ${r.saida.split('\n').slice(-3).join(' / ') || '(sem mensagem)'}`);
       continue;
     }
-    ok(jaEstava ? `${nome}: já estava instalado` : `${nome}: instalado`);
-    if (!jaEstava) novosPlugins.push(nome);
-    if (jaEstava && !kit.ehPasta) {
-      const atualizou = claude(['plugin', 'update', id]);
-      nota(atualizou.status === 0 ? `${nome}: conferi se há versão nova` : `${nome}: não consegui conferir versão nova (${atualizou.saida.split('\n')[0]})`);
+    if (!jaEstava) {
+      ok(`${nome}: instalado`);
+      novosPlugins.push(nome);
+      continue;
     }
+    // Quem já tinha o plugin roda a cópia que o Claude Code guardou ao instalar: sem o update, a versão nova não entra.
+    // Vale também para o kit instalado de uma pasta (provado em _dev/ensaiar-atualizar-pasta.mjs).
+    if (!marketplaceConferido) {
+      claude(['plugin', 'marketplace', 'update', kit.marketplace]);
+      marketplaceConferido = true;
+    }
+    const atualizou = claude(['plugin', 'update', id]);
+    const mudou = /updated from (\S+) to (\S+)/i.exec(atualizou.saida);
+    if (mudou) ok(`${nome}: atualizado da versão ${mudou[1]} para a ${mudou[2]}`);
+    else if (atualizou.status === 0) ok(`${nome}: já estava instalado, na versão mais nova`);
+    else aviso(`${nome}: já estava instalado, mas não consegui conferir se há versão nova (${atualizou.saida.split('\n')[0] || 'sem mensagem'})`);
   }
 
   // ---- a barra: arquivos
@@ -537,7 +553,10 @@ function instalar(opcoes) {
   if (resolve(esteArquivo) !== resolve(copiaDoInstalador)) copyFileSync(esteArquivo, copiaDoInstalador);
 
   titulo('Pronto.');
-  nota('Abra uma sessão nova do Claude Code para ver a barra e a janela de compactação.');
+  const barraMantida = plano.mantidos.some((m) => m.motivo === 'barra' && m.caminho[0] === 'statusLine');
+  nota(barraMantida
+    ? 'Abra uma sessão nova do Claude Code para os plugins e a janela de compactação valerem. A barra de status continua a sua.'
+    : 'Abra uma sessão nova do Claude Code para ver a barra e a janela de compactação.');
   nota(`Para desfazer tudo:  node "${comBarra(copiaDoInstalador)}" --desfazer`);
   return 0;
 }

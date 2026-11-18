@@ -361,7 +361,7 @@ export type EstadoCodex = {
   sessao?: string
   /** A execução falhou por limite de uso ou falta de crédito. */
   limiteEstourou?: boolean
-  /** Caminhos (relativos à pasta) que mudaram durante a execução; null fora de um repositório git. */
+  /** Caminhos absolutos que mudaram durante a execução (um registro antigo os traz relativos à pasta); null fora de um repositório git. */
   alterados?: string[] | null
   /** Tokens que o Codex informou no fim do turno, quando informou. */
   uso?: Record<string, number>

@@ -144,8 +144,8 @@ export const accountOf = (account: Fields): string =>
   createHash('sha256').update(JSON.stringify([textOf(account, 'email') ?? null, textOf(account, 'planType') ?? null])).digest('hex').slice(0, 16)
 
 /**
- * O `stat` do `auth.json` do `CODEX_HOME`, sem ler o conteúdo: muda quando o login muda (o "Tornar ativa" do CENTER, um
- * `codex login`) e quando um Codex renova o token. Com o login no keyring do sistema, o arquivo não existe e o valor
+ * O `stat` do `auth.json` do `CODEX_HOME`, sem ler o conteúdo: muda quando o login muda (a troca de conta por outro
+ * programa, um `codex login`) e quando um Codex renova o token. Com o login no keyring do sistema, o arquivo não existe e o valor
  * não muda.
  */
 export function authStamp(): string {

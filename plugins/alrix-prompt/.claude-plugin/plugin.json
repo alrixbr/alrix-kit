@@ -1,6 +1,6 @@
 {
   "name": "alrix-prompt",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Modos das suas mensagens, desligados até você querer: Normal passa direto; Organizar arruma a escrita sem mudar o que você pediu; Engenharia reestrutura o pedido para o agente e devolve na caixa para você revisar. Liga pela faixa acima do prompt (só a próxima mensagem ou a sessão), por /organizar, /engenharia ou /modo. Os dois especialistas são Sonnet 5.5.",
   "author": { "name": "ALRIX" },
   "types": "./types/index.d.ts"

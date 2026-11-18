@@ -38,26 +38,34 @@ function lerPedido() {
   return pedido
 }
 
-/** Arquivos que o git vê alterados, com a hora de gravação de cada um; null fora de um repositório. */
-function alteradosAgora(raiz) {
+/**
+ * Arquivos que o git vê alterados, pelo caminho absoluto, com a hora de gravação de cada um; null fora de um
+ * repositório. Os caminhos do `--porcelain` são relativos à raiz do repositório, que pode ficar acima da pasta do
+ * projeto: por isso a raiz vem do próprio git. Com `-z` eles chegam sem aspas nem escapes (acento, espaço).
+ */
+function alteradosAgora(pasta) {
+  const git = args => execFileSync('git', args, { cwd: pasta, encoding: 'utf8', timeout: 30_000, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] })
+  let topo
   let texto
   try {
-    texto = execFileSync('git', ['status', '--porcelain', '--untracked-files=all'], {
-      cwd: raiz, encoding: 'utf8', timeout: 30_000, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'],
-    })
+    topo = git(['rev-parse', '--show-toplevel']).trim()
+    texto = git(['status', '--porcelain', '-z', '--untracked-files=all'])
   } catch {
     return null
   }
+  if (!topo) return null
   const mapa = new Map()
-  for (const linha of texto.split('\n')) {
-    if (linha.length < 4) continue
-    let caminho = linha.slice(3)
-    const seta = caminho.indexOf(' -> ')
-    if (seta >= 0) caminho = caminho.slice(seta + 4)
-    caminho = caminho.replace(/^"|"$/g, '')
+  const campos = texto.split('\0')
+  for (let i = 0; i < campos.length; i += 1) {
+    const campo = campos[i]
+    if (campo.length < 4) continue
+    const xy = campo.slice(0, 2)
+    // renomeado ou copiado: o campo seguinte é o nome antigo
+    if (xy[0] === 'R' || xy[0] === 'C') i += 1
+    const caminho = path.join(topo, campo.slice(3))
     let hora = 0
-    try { hora = statSync(path.join(raiz, caminho)).mtimeMs } catch { /* apagado */ }
-    mapa.set(caminho, `${linha.slice(0, 2)}|${hora}`)
+    try { hora = statSync(caminho).mtimeMs } catch { /* apagado */ }
+    mapa.set(caminho.replace(/\\/g, '/'), `${xy}|${hora}`)
   }
   return mapa
 }

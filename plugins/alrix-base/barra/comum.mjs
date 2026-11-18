@@ -39,9 +39,14 @@ export function temaAtual(ajustes) {
   return tema.includes('papel') || tema.startsWith('light') ? 'papel' : 'tinta';
 }
 
+/** NO_COLOR no ambiente: nada sai com cor. */
+export const SEM_COR = 'NO_COLOR' in process.env && process.env.NO_COLOR !== '';
+/** O traço da parte vazia de uma barra: com cor, o mesmo da parte cheia (a cor as separa); sem cor, um traço fino. */
+export const TRACO_VAZIO = SEM_COR ? '─' : '━';
+
 /** Devolve um pintor por nome de cor: cor.accent('texto'). Com NO_COLOR no ambiente, o texto sai sem cor. */
 export function pintores(tema) {
-  const semCor = 'NO_COLOR' in process.env && process.env.NO_COLOR !== '';
+  const semCor = SEM_COR;
   const paleta = lerJson(join(AQUI, 'paleta.json'))?.[tema] ?? {};
   const pintor = (hex) => {
     const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '');

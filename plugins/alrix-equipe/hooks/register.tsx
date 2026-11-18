@@ -131,12 +131,15 @@ export const register: Register = (on, options) => {
     if ((e.tool === 'Agent') && cfg.modo === 'barrar' && (e as unknown as Record<string, unknown>).effort !== undefined) {
       return { deny: 'alrix-equipe: o porteiro do esforço falhou e, no modo barrar, a chamada com "effort" fica recusada. Chame sem "effort".' }
     }
-    if (e.agentId === undefined || cfg.modo !== 'barrar' || (!ESCRITA.has(e.tool) && !SHELL.has(e.tool))) return next(e)
+    if (e.agentId === undefined || cfg.modo === 'desligado' || (!ESCRITA.has(e.tool) && !SHELL.has(e.tool))) return next(e)
+    // O território vale nos dois modos ligados: se o porteiro falha, a escrita ou o comando de quem é do time fica
+    // recusado (passar seria gravar sem cerca). Sem conseguir ler o time, o modo barrar recusa e o aviso deixa passar,
+    // porque no aviso um defeito do mod não para os ajudantes de fora do time.
     const agentId = e.agentId
     const doTime = await lerTime($)
       .then(time => time.some(x => x.agentIds.includes(agentId)))
-      .catch(() => true)
-    return doTime ? { deny: 'alrix-equipe: o porteiro falhou e, no modo barrar, a escrita ou o comando de um especialista fica recusado. Peça ao chefe.' } : next(e)
+      .catch(() => cfg.modo === 'barrar')
+    return doTime ? { deny: 'alrix-equipe: o porteiro falhou, e a escrita ou o comando de um especialista fica recusado enquanto ele não confere o território. Pare e peça ao chefe.' } : next(e)
   })
 
   on('agent.spawn', async ($, e, next) => {

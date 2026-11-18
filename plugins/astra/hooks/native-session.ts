@@ -1,6 +1,7 @@
 import type { EngineInterface, On, SessionCompactInput, SessionCompactResult, SessionEndInput, SessionEndResult, SessionMessage, TurnCompleteInput, TurnCompleteResult } from 'claude-code'
 import { bridgeCall, liveBridge } from './bridge-client'
 import { forgetNativeLoop, isGptModel } from './native'
+import { forgetLoopCwd } from './native-agent'
 import { forgetContext, onContext } from './native-context'
 import { forgetLoop, isGptLoop, onDelivery } from './native-news'
 import { forgetLive, onSubmit } from './native-steer'
@@ -60,6 +61,7 @@ export async function onEnd($: EngineInterface, e: SessionEndInput, next: (e: Se
     forgetNativeLoop(key)
     forgetLive(key)
     forgetContext(key)
+    await forgetLoopCwd($, key)
     const bridge = liveBridge()
     if (bridge !== undefined) await bridgeCall($, bridge, '/forget', { session: e.sessionId }).catch(() => undefined)
   }

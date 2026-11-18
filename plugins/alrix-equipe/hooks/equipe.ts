@@ -47,6 +47,7 @@ import {
   absoluto,
   caminhosDoShell,
   comandoRecusado,
+  configDoClaudeNoProjeto,
   decidirEscrita,
   dentro,
   dentroDeAlgum,
@@ -57,6 +58,7 @@ import {
   formaSuspeita,
   normalizar,
   padraoQueCasa,
+  pastasProtegidas,
   programaDoComando,
   semCorpoDeHeredoc,
   leituraDeChave,
@@ -104,10 +106,12 @@ export function lerConfig(o: PluginOptions): Config {
 export { casaDe, configDe, dadosDe } from './pastas.ts'
 
 /**
- * O que nenhum especialista escreve, nem com "ampliar": as pastas dos mods carregados (só o chefe as atualiza, depois
- * de ler a diferença) e a prateleira da pessoa (projetos e skills aprovadas passam pelas ferramentas do mod).
+ * O que nenhum especialista escreve, nem com "ampliar": o que é do Claude Code na pasta de configuração (mods e
+ * plugins instalados, ganchos, regras, agentes, skills, comandos, ajustes, login e a barra do kit: só o chefe os
+ * muda, depois de ler a diferença) e a prateleira da pessoa (projetos e skills aprovadas passam pelas ferramentas do
+ * mod). É a mesma lista da cerca do terminal (pastasProtegidas).
  */
-export const naoToqueDoMod = (config: string): string[] => [`${config}/mods`, `${config}/dev-mods`, prateleiraDaPessoa(config)].map(normalizar)
+export const naoToqueDoMod = (config: string): string[] => pastasProtegidas('', config)
 
 /** Onde vai o relatório longo de um especialista desta sessão (o caminho que a ficha dele cita), normalizado. */
 export async function caminhoRelatorio($: EngineInterface, nome: string, config: string): Promise<string> {
@@ -838,6 +842,11 @@ async function ampliar($: EngineInterface, input: Record<string, unknown>): Prom
       recusas.push(`${original}: está na lista da casa que nenhum especialista escreve (${daCasa})`)
       continue
     }
+    const doClaude = naoToqueDoMod(await configDe($)).find(t => reais.some(c => dentro(c, t))) ?? reais.map(c => configDoClaudeNoProjeto(c)).find(p => p !== undefined)
+    if (doClaude !== undefined) {
+      recusas.push(`${original}: é configuração do Claude Code, que só o chefe muda (${doClaude})`)
+      continue
+    }
     novos.push(...reais)
   }
   if (novos.length) {
@@ -1439,20 +1448,45 @@ async function decidirNascimentoDentro($: EngineInterface, cfg: Config, e: Agent
 
 /**
  * O modelo que a definição de um ajudante da casa fixa (`model:` no cabeçalho do .md): os do usuário em
- * ~/.claude/agents/<nome>.md, os de um mod em ~/.claude/mods/<plugin>/agents/<nome>.md. Undefined quando o arquivo
- * não se lê ou não diz modelo (plugin instalado de outro jeito, por exemplo).
+ * ~/.claude/agents/<nome>.md, os de um mod em ~/.claude/mods/<plugin>/agents/<nome>.md e os de um plugin instalado
+ * pelo `claude plugin install`, na pasta que o registro de instalados do Claude Code diz. Undefined quando o arquivo
+ * não se lê ou não diz modelo.
  */
 async function modeloDaDefinicao($: EngineInterface, tipo: string): Promise<string | undefined> {
   const config = await configDe($)
   const doisPontos = tipo.indexOf(':')
-  const arquivo = doisPontos < 0 ? `${config}/agents/${tipo}.md` : `${config}/mods/${tipo.slice(0, doisPontos)}/agents/${tipo.slice(doisPontos + 1)}.md`
+  const plugin = doisPontos < 0 ? undefined : tipo.slice(0, doisPontos)
+  const nome = doisPontos < 0 ? tipo : tipo.slice(doisPontos + 1)
   // um nome com barra ou ".." não vira caminho para outro arquivo
-  if (/[\\/]|\.\./.test(doisPontos < 0 ? tipo : tipo.slice(doisPontos + 1))) return undefined
+  if (/[\\/]|\.\./.test(nome) || (plugin !== undefined && /[\\/]|\.\./.test(plugin))) return undefined
+  const arquivos = plugin === undefined ? [`${config}/agents/${nome}.md`] : [`${config}/mods/${plugin}/agents/${nome}.md`]
+  if (plugin !== undefined) {
+    const instalado = await pastaDoPluginInstalado($, config, plugin)
+    if (instalado !== undefined) arquivos.push(`${instalado}/agents/${nome}.md`)
+  }
+  for (const arquivo of arquivos) {
+    try {
+      const texto = String(await $.fs.read(arquivo))
+      const cabecalho = /^---\r?\n([\s\S]*?)\r?\n---/.exec(texto)?.[1] ?? ''
+      const achado = /^model:\s*["']?([^"'\s#]+)/m.exec(cabecalho)?.[1]
+      return achado === undefined || achado === 'inherit' ? undefined : achado
+    } catch {
+      // arquivo que não existe neste lugar: tenta o seguinte
+    }
+  }
+  return undefined
+}
+
+/** A pasta de onde o Claude Code carrega um plugin instalado (`plugins/installed_plugins.json`, chave `<plugin>@<marketplace>`). */
+async function pastaDoPluginInstalado($: EngineInterface, config: string, plugin: string): Promise<string | undefined> {
   try {
-    const texto = String(await $.fs.read(arquivo))
-    const cabecalho = /^---\r?\n([\s\S]*?)\r?\n---/.exec(texto)?.[1] ?? ''
-    const achado = /^model:\s*["']?([^"'\s#]+)/m.exec(cabecalho)?.[1]
-    return achado === undefined || achado === 'inherit' ? undefined : achado
+    const registro: unknown = JSON.parse(String(await $.fs.read(`${config}/plugins/installed_plugins.json`)))
+    const entradas = (registro as { plugins?: Record<string, unknown> } | null)?.plugins ?? {}
+    const chave = Object.keys(entradas).find(k => k.startsWith(`${plugin}@`))
+    const entrada = chave === undefined ? undefined : entradas[chave]
+    const item: unknown = Array.isArray(entrada) ? entrada[0] : entrada
+    const pasta = (item as { installPath?: unknown } | null | undefined)?.installPath
+    return typeof pasta === 'string' && pasta !== '' ? pasta.replace(/\\/g, '/').replace(/\/$/, '') : undefined
   } catch {
     return undefined
   }
@@ -1728,6 +1762,34 @@ async function especialistaDe($: EngineInterface, agentId: string | undefined): 
   return (await lerTime($)).find(x => x.agentIds.includes(agentId)) ?? (await lerVigiados($)).find(x => x.agentIds.includes(agentId))
 }
 
+// Os ids que a lista do motor já disse não serem do time (nesta carga): a lista não é consultada de novo por eles.
+const DE_FORA_DO_TIME = new Set<string>()
+
+/**
+ * O especialista dono deste agentId, para os porteiros. O motor pode rodar os primeiros passos de um especialista
+ * antes de o gancho de nascimento anotar o id dele no time (registrarNascimento só roda quando o motor devolve o id).
+ * Nesse intervalo o tipo que a lista do motor dá ao id (`alrix-equipe:<nome>`) diz de quem é o passo, e o território
+ * vale desde a primeira ferramenta. Quem a lista diz ser de outro tipo fica anotado e não custa outra consulta.
+ */
+async function especialistaDoPasso($: EngineInterface, agentId: string | undefined): Promise<EquipeEspecialista | undefined> {
+  const conhecido = await especialistaDe($, agentId)
+  if (conhecido !== undefined || agentId === undefined || DE_FORA_DO_TIME.has(agentId)) return conhecido
+  let tipo: string | undefined
+  try {
+    tipo = (await $.agent.list()).find(a => a.id === agentId)?.type
+  } catch {
+    return undefined
+  }
+  if (tipo === undefined) return undefined
+  if (!tipo.startsWith(TIPO)) {
+    if (DE_FORA_DO_TIME.size >= 2000) DE_FORA_DO_TIME.clear()
+    DE_FORA_DO_TIME.add(agentId)
+    return undefined
+  }
+  const nome = tipo.slice(TIPO.length)
+  return (await lerTime($)).find(x => x.nome === nome)
+}
+
 // Falhas de porteiro já ditas ao chefe nesta carga: a mesma falha não vira outra linha.
 const FALHAS_DITAS = new Set<string>()
 
@@ -1776,7 +1838,7 @@ const DEVOLUCAO_PEDIDA = new Set<string>()
  */
 export async function porteiroDevolucao($: EngineInterface, cfg: Config, mensagem: unknown, agentId: string | undefined): Promise<{ deny: string } | undefined> {
   if (cfg.modo === 'desligado' || agentId === undefined || typeof mensagem !== 'string') return undefined
-  const esp = await especialistaDe($, agentId)
+  const esp = await especialistaDoPasso($, agentId)
   if (esp === undefined || ehAjudante(esp, agentId)) return undefined
   const molde = esp.texto.split('<devolucao>')[1]?.split('</devolucao>')[0] ?? ''
   const partes = partesDoMolde(molde)
@@ -1811,7 +1873,7 @@ export async function porteiroAprovados($: EngineInterface, cfg: Config, caminho
 /** Escrita (Edit, Write, NotebookEdit) de um especialista: undefined deixa passar; `{ deny }` recusa. */
 export async function porteiroEscrita($: EngineInterface, cfg: Config, ferramenta: string, caminho: unknown, agentId: string | undefined): Promise<{ deny: string } | undefined> {
   if (cfg.modo === 'desligado') return undefined
-  const esp = await especialistaDe($, agentId)
+  const esp = await especialistaDoPasso($, agentId)
   if (esp === undefined) return undefined
   const negar = async (alvo: string, motivo: string): Promise<{ deny: string }> => {
     await registrarRecusa($, esp, ferramenta, alvo, motivo)
@@ -1829,6 +1891,10 @@ export async function porteiroEscrita($: EngineInterface, cfg: Config, ferrament
   const escrito = absoluto(caminho, cwd, casa)
   const pelo = esp.naoToque.find(t => dentro(escrito, t)) ?? padraoQueCasa(escrito, prateleira.casa.naoToque, casa) ?? naoToqueDoMod(await configDe($)).find(t => dentro(escrito, t) || dentro(real, t))
   if (pelo !== undefined) return negar(real, `${escrito} está em "não toque em" ou na lista da casa (${pelo})`)
+  // Os ajustes, os ganchos e os servidores MCP de um projeto rodam código na sessão seguinte, fora de todo porteiro:
+  // nem dentro do território um especialista os escreve.
+  const doClaude = configDoClaudeNoProjeto(escrito) ?? configDoClaudeNoProjeto(real)
+  if (doClaude !== undefined) return negar(real, `${escrito} é configuração do Claude Code (${doClaude}), que só o chefe muda`)
   // O arquivo do relatório longo é o que a ficha manda escrever: passa, mesmo fora do território.
   if (normalizar(real) === (await caminhoRelatorio($, esp.nome, await configDe($)))) return undefined
   const decisao = decidirEscrita({ caminho: real, territorio: esp.territorio, naoToque: esp.naoToque, casaNaoToque: prateleira.casa.naoToque, casa })
@@ -1963,13 +2029,13 @@ export async function porteiroLeitura($: EngineInterface, cfg: Config, ferrament
   if (cfg.modo === 'desligado' || agentId === undefined) return undefined
   const chave = leituraDeChaveNaFerramenta(ferramenta, campos)
   if (chave === undefined) return undefined
-  return porteiroDaChave($, cfg, await especialistaDe($, agentId), agentId, ferramenta, chave)
+  return porteiroDaChave($, cfg, await especialistaDoPasso($, agentId), agentId, ferramenta, chave)
 }
 
 export async function porteiroShell($: EngineInterface, cfg: Config, ferramenta: string, comando: unknown, agentId: string | undefined): Promise<{ deny: string } | undefined> {
   // o terminal do chefe fica sem guarda (agentId ausente): para ele vale só a regra escrita
   if (cfg.modo === 'desligado' || typeof comando !== 'string' || agentId === undefined) return undefined
-  const esp = await especialistaDe($, agentId)
+  const esp = await especialistaDoPasso($, agentId)
   const espera = esperaNoComando(comando)
   // No diagnóstico, só o programa: o texto do comando pode levar um segredo (um cabeçalho, uma senha na linha).
   const programa = programaDoComando(comando)

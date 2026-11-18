@@ -13,7 +13,7 @@ Cole essa linha no PowerShell do Windows. Ela confere o que falta no computador,
 | Parte | O que faz |
 | --- | --- |
 | **alrix-equipe** | O agente principal monta especialistas sob medida para cada tarefa. Cada um nasce com uma ficha (o projeto, as ferramentas, as skills que você aprovou, a pasta onde pode escrever e como provar que terminou), e você libera o time num cartão antes de ele começar. |
-| **astra** | Os modelos do Codex (GPT-6.2 Astra e GPT-6.2 Sol) como agentes dentro do Claude Code, com a sua conta do ChatGPT. Com ele, o alrix-equipe monta também especialistas do Codex. Só é instalado se o Codex já estiver no computador. |
+| **astra** | Os modelos do Codex (GPT-6.2 Astra e GPT-6.2 Sol) como agentes dentro do Claude Code, com a sua conta do ChatGPT. Com ele, o alrix-equipe monta também especialistas do Codex. Só é instalado se o Codex já estiver no computador e o Node.js for o 22.18 ou mais novo. |
 | **alrix-prompt** | Modos para as suas mensagens: organizar a escrita ou reestruturar o pedido antes de enviar. |
 | **alrix-base** | O relógio do computador junto de cada pedido, os seus pedidos de volta depois que a conversa compacta e o ajudante `pesquisador`. |
 | **Barra de status** | O modelo, a pasta e o ramo do git, o uso do contexto, o cache, o custo, os limites do plano e o time da equipe. |
@@ -27,7 +27,7 @@ Cada plugin tem o seu próprio README, em `plugins/<nome>/README.md`, com o que 
 - **Claude Code** atualizado. Para instalar: `irm https://claude.ai/install.ps1 | iex`. Para atualizar: `claude update`. O kit foi testado na versão 2.1.327 e não instala em versões anteriores à 2.1.275.
 - **Node.js**. Para instalar: `winget install OpenJS.NodeJS.LTS`. O astra precisa do Node 22.18 ou mais novo; o resto funciona a partir do 18.
 - **Git**. Para instalar: `winget install Git.Git`. O Claude Code usa o Git para baixar os plugins.
-- **Codex** (opcional, só para o astra): `npm install -g @openai/codex` e depois `codex login`.
+- **Codex** (opcional, só para o astra): `npm.cmd install -g @openai/codex` e depois `codex.cmd login`. O `.cmd` no fim é de propósito: num Windows recém-instalado, o PowerShell bloqueia os atalhos `npm` e `codex` sem ele.
 
 Depois de instalar um desses programas, feche e abra o PowerShell para o Windows enxergar o programa novo. Se faltar algum, a linha de instalação avisa qual e mostra o comando.
 
@@ -115,7 +115,7 @@ git clone https://github.com/alrixbr/alrix-kit ~/alrix-kit
 node ~/alrix-kit/instalar.mjs
 ```
 
-Instalado assim, o Claude Code lê os plugins da pasta `~/alrix-kit`: não mova nem apague a pasta. Para atualizar, rode `git -C ~/alrix-kit pull` e o instalador de novo.
+Instalado assim, o Claude Code guarda a pasta `~/alrix-kit` como a origem dos plugins: não mova nem apague a pasta. Para atualizar, rode `git -C ~/alrix-kit pull` e o instalador de novo.
 
 ## Uso e licença
 

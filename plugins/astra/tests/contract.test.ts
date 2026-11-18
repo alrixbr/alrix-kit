@@ -174,6 +174,20 @@ for (const [label, line, cwd] of [['Linux e macOS', 'cwd: /work/repo', '/work/re
   })
 }
 
+test('(d) a pasta da linha cwd: vale nos passos seguintes, também depois que o 1º pedido sai do transcript (compactação)', async ($, on) => {
+  const given: Given = { rows: [ask('cwd: /work/repo\nFaça a tarefa')], agents: [agent('a1', 'outro:tipo'), agent('a2', 'outro:tipo')] }
+  const { ensures, release } = world(on, given)
+  await opened($)
+  await run($, 'a1')
+  // a compactação tirou o 1º pedido: o transcript de a1 começa agora por um pedido sem a linha
+  given.rows = [ask('Continue de onde parou')]
+  await run($, 'a1')
+  // outro agente, que nunca teve a linha, segue na pasta da sessão
+  await run($, 'a2')
+  release()
+  expect(ensures().map(body => [body.key, body.cwd])).toEqual([['a1', '/work/repo'], ['a1', '/work/repo'], ['a2', '/synthetic']])
+})
+
 test('o pedido à ponte leva o segredo da sessão; no socket Unix, pelo socketPath', async ($, on) => {
   const { fetched, release } = world(on, {})
   await opened($)

@@ -35,6 +35,40 @@ export type LoopOf = { agentId?: string; mainType?: string }
 type Role = { type?: string; profile?: Profile; foreign?: { spec?: AstraForeignAgent } }
 
 /**
+ * A pasta que a linha `cwd:` deu a cada loop, guardada na primeira vez em que ela aparece (na memória e no `$.state`,
+ * que sobrevive ao recarregamento do mod). Depois de uma compactação o 1º pedido sai do transcript, e sem isto o passo
+ * seguinte abriria outra thread do Codex na pasta da sessão, gravando no lugar errado sem avisar.
+ */
+const CWDS = { plugin: 'astra', key: 'cwds' } as const
+const loopCwds = new Map<string, string>()
+
+async function cwdOf($: EngineInterface, key: string, asked: string | undefined): Promise<string | undefined> {
+  if (asked !== undefined) {
+    if (loopCwds.get(key) !== asked) {
+      loopCwds.set(key, asked)
+      // Guardar é só para sobreviver ao recarregamento: se falhar, a memória do módulo ainda vale nesta carga.
+      await $.state.get(CWDS).then(({ value }) => $.state.set(CWDS, { ...(value ?? {}), [key]: asked })).catch(() => undefined)
+    }
+    return asked
+  }
+  const held = loopCwds.get(key)
+  if (held !== undefined) return held
+  const saved = await $.state.get(CWDS).then(({ value }) => value?.[key]).catch(() => undefined)
+  if (saved !== undefined) loopCwds.set(key, saved)
+  return saved
+}
+
+/** O loop acabou (`/clear`, ou outra conversa retomada): a pasta dele não vale para a conversa seguinte. */
+export async function forgetLoopCwd($: EngineInterface, key: string): Promise<void> {
+  loopCwds.delete(key)
+  await $.state.get(CWDS).then(({ value }) => {
+    if (value === undefined || !(key in value)) return undefined
+    const { [key]: _gone, ...rest } = value
+    return $.state.set(CWDS, rest)
+  }).catch(() => undefined)
+}
+
+/**
  * O tipo e o perfil do loop. Sem saber o papel, o passo recusa em vez de abrir o Codex: o subagente que não está na
  * lista da sessão, e o tipo `astra:*` sem perfil em `profiles.ts`.
  */
@@ -88,11 +122,13 @@ function historyOf(task: readonly SessionMessage[]): string | undefined {
 
 /**
  * O loop de um pedido novo. Num agente (subagente, ou o loop principal lançado com um), a linha `cwd:` do 1º pedido
- * diz onde o Codex trabalha; um diretório que não existe vira o texto de recusa, sem abrir turno.
+ * diz onde o Codex trabalha, e vale para todos os passos do loop, também depois que esse pedido sai do transcript;
+ * um diretório que não existe vira o texto de recusa, sem abrir turno.
  */
 export async function setupOf($: EngineInterface, loop: LoopOf, rows: readonly SessionMessage[]): Promise<LoopSetup | string> {
   const isAgent = loop.agentId !== undefined || loop.mainType !== undefined
-  const { cwd, rows: task } = isAgent ? directiveOf(rows) : { cwd: undefined, rows }
+  const { cwd: asked, rows: task } = isAgent ? directiveOf(rows) : { cwd: undefined, rows }
+  const cwd = isAgent ? await cwdOf($, loop.agentId ?? `main:${await $.session.id()}`, asked) : undefined
   if (cwd !== undefined && !(await $.fs.exists(cwd))) return `[astra] O diretório de trabalho do pedido não existe: ${cwd}`
   const role = await roleOf($, loop)
   if (typeof role === 'string') return role

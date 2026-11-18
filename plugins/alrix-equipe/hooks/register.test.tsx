@@ -578,6 +578,71 @@ test('território pelo porteiro: dentro passa; fora, link para fora, forma do Wi
   expect(await call($, 'ampliar', { especialista: 'a', caminhos: ['C:/Users/teste/.claude/settings.json'], motivo: 'teste' })).toContain('lista da casa')
 })
 
+test('configuração do Claude Code: nem dentro do território o especialista escreve ajustes, ganchos ou servidores MCP do projeto', async ($, on) => {
+  const w = world(on)
+  await start($)
+  w.respostas = ['Liberar este time']
+  await call($, 'montar', { time: [ficha('a')] })
+  await nascer($, { tipo: 'alrix-equipe:a' })
+  for (const caminho of ['C:\\proj\\src\\.claude\\settings.json', 'C:\\proj\\src\\.claude\\settings.local.json', 'C:\\proj\\src\\.claude\\hooks\\antes.mjs', 'C:\\proj\\src\\.mcp.json', 'C:\\proj\\src\\pacote\\.MCP.json']) {
+    expect(String((await escrever($, caminho, 'ag-1')).deny)).toContain('configuração do Claude Code')
+  }
+  // o que só tem nome parecido segue passando
+  expect((await escrever($, 'C:\\proj\\src\\.claude\\notas.md', 'ag-1')).deny).toBeUndefined()
+  expect((await escrever($, 'C:\\proj\\src\\settings.json', 'ag-1')).deny).toBeUndefined()
+  expect((await escrever($, 'C:\\proj\\src\\hooks\\useCarrinho.ts', 'ag-1')).deny).toBeUndefined()
+  // o terminal recusa o mesmo, pelo caminho
+  expect(String((await shell($, 'cp modelo.json C:/proj/src/.mcp.json', 'ag-1')).deny)).toContain('recusou')
+  // ampliar não abre o que é do Claude Code
+  const ampliado = await call($, 'ampliar', { especialista: 'a', caminhos: ['C:/Users/teste/.claude/plugins/cache/alrix', 'C:/Users/teste/.claude/agents', 'C:/proj/.claude/hooks'], motivo: 'teste' })
+  expect(ampliado).toContain('C:/Users/teste/.claude/plugins/cache/alrix: é configuração do Claude Code')
+  expect(ampliado).toContain('C:/Users/teste/.claude/agents: é configuração do Claude Code')
+  expect(ampliado).toContain('C:/proj/.claude/hooks: é configuração do Claude Code')
+})
+
+test('configuração do Claude Code: com a pasta do usuário no território, plugins, ganchos, regras, agentes, skills e a barra do kit seguem recusados', async ($, on) => {
+  const w = world(on)
+  await start($)
+  w.respostas = ['Liberar este time']
+  await call($, 'montar', { time: [ficha('a')] })
+  await nascer($, { tipo: 'alrix-equipe:a' })
+  expect(await call($, 'ampliar', { especialista: 'a', caminhos: ['C:/Users/teste'], motivo: 'A tarefa mexe em arquivos da pasta do usuário.' })).toContain('ampliado')
+  expect((await escrever($, 'C:\\Users\\teste\\notas\\a.md', 'ag-1')).deny).toBeUndefined()
+  const passaram: string[] = []
+  for (const caminho of [
+    'C:\\Users\\teste\\.claude\\plugins\\cache\\alrix\\alrix-equipe\\0.5.1\\hooks\\register.tsx',
+    'C:\\Users\\teste\\.claude\\hooks\\novo.mjs',
+    'C:\\Users\\teste\\.claude\\rules\\regra.md',
+    'C:\\Users\\teste\\.claude\\agents\\novo.md',
+    'C:\\Users\\teste\\.claude\\skills\\nova\\SKILL.md',
+    'C:\\Users\\teste\\.claude\\commands\\novo.md',
+    'C:\\Users\\teste\\.claude\\alrix-kit\\barra\\statusline.mjs',
+    'C:\\Users\\teste\\.claude\\CLAUDE.md',
+  ]) {
+    if (!String((await escrever($, caminho, 'ag-1')).deny).includes('recusou')) passaram.push(caminho)
+  }
+  expect(passaram).toEqual([])
+})
+
+test('território desde o primeiro passo: a escrita que chega antes do registro do nascimento já é conferida pelo tipo que o motor dá ao id', async ($, on) => {
+  const w = world(on)
+  const lista: any[] = [
+    { id: 'ag-9', status: 'running', description: 'x', type: 'alrix-equipe:a' },
+    { id: 'ag-8', status: 'running', description: 'x', type: 'Explore' },
+  ]
+  on('agent.list', () => ({ value: lista }))
+  await start($)
+  w.respostas = ['Liberar este time']
+  await call($, 'montar', { time: [ficha('a')] })
+  // ag-9 é do tipo do especialista "a", mas o gancho de nascimento ainda não anotou o id dele
+  expect(String((await escrever($, 'C:\\proj\\docs\\x.md', 'ag-9')).deny)).toContain('fora do seu território')
+  expect(String((await shell($, 'echo x > C:/fora/y.txt', 'ag-9')).deny)).toContain('fora do seu território')
+  expect((await escrever($, 'C:\\proj\\src\\novo.ts', 'ag-9')).deny).toBeUndefined()
+  // quem a lista diz ser de outro tipo, e quem ela não conhece, passam como antes
+  expect((await escrever($, 'C:\\proj\\docs\\x.md', 'ag-8')).deny).toBeUndefined()
+  expect((await escrever($, 'C:\\proj\\docs\\x.md', 'ag-7')).deny).toBeUndefined()
+})
+
 test('acionar grava o pedido certo, volta na hora e, no fim, avisa o chefe com a resposta e o que mudou fora', async ($, on) => {
   const w = world(on)
   await start($)
@@ -1592,6 +1657,14 @@ test('ajudante da casa sem modelo nasce no modelo da definição quando ela diz 
   // o pedido com modelo vence a definição
   await nascer($, { tipo: 'buscador', model: 'sonnet' })
   expect(w.spawns[3].model).toBe('sonnet')
+  // a definição de um plugin instalado pelo `claude plugin install` vale: a pasta vem do registro de instalados
+  w.disco.set('c:/users/teste/.claude/plugins/installed_plugins.json', { kind: 'file', text: JSON.stringify({ version: 2, plugins: { 'extra@loja': [{ scope: 'user', installPath: 'c:\\users\\teste\\.claude\\plugins\\cache\\loja\\extra\\1.2.0', version: '1.2.0' }] } }) })
+  w.disco.set('c:/users/teste/.claude/plugins/cache/loja/extra/1.2.0/agents/extra-revisor.md', { kind: 'file', text: '---\nname: extra-revisor\nmodel: claude-sonnet-5-5\n---\nRevisa.' })
+  await nascer($, { tipo: 'extra:extra-revisor' })
+  expect(w.spawns[4].model).toBe('claude-sonnet-5-5')
+  // plugin que o registro não tem: cai no padrão, como antes
+  await nascer($, { tipo: 'extra:extra-sem-arquivo' })
+  expect(w.spawns[5].model).toBe('sonnet')
 })
 
 test('sonda do modo aviso: cada oferta e cada nascimento deixam em avisos.jsonl os valores reais, sem texto do pedido', { options: { modo: 'aviso' } }, async ($, on) => {

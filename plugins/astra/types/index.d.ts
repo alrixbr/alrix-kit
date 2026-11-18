@@ -12,6 +12,7 @@ export type AstraForeignAgent = { prompt: string; tools?: string[]; disallowedTo
 
 declare module 'claude-code' {
   interface PluginState {
-    astra: { mainAgent: AstraMainAgent; agents: Record<string, AstraForeignAgent> }
+    /** `cwds`: a pasta de trabalho que a linha `cwd:` deu a cada loop (o id do agente, ou `main:<sessão>`). */
+    astra: { mainAgent: AstraMainAgent; agents: Record<string, AstraForeignAgent>; cwds: Record<string, string> }
   }
 }

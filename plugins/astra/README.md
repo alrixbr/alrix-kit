@@ -9,11 +9,11 @@ O astra põe o Codex da OpenAI para trabalhar dentro do Claude Code. Com ele ins
 - **Codex instalado e com login.** No terminal (no Windows, o PowerShell):
 
   ```
-  npm install -g @openai/codex
-  codex login
+  npm.cmd install -g @openai/codex
+  codex.cmd login
   ```
 
-  O `codex login` abre o navegador para você entrar com a sua conta do ChatGPT. O astra usa o limite de uso dessa conta, como o próprio Codex usa. Se o Codex já está instalado de outro jeito e o comando `codex` funciona no terminal, não precisa instalar de novo.
+  O `.cmd` no fim é de propósito: num Windows recém-instalado, o PowerShell bloqueia os atalhos `npm` e `codex` sem ele, com o erro "a execução de scripts foi desabilitada neste sistema". No Linux e no macOS, escreva sem o `.cmd`. O `codex login` abre o navegador para você entrar com a sua conta do ChatGPT. O astra usa o limite de uso dessa conta, como o próprio Codex usa. Se o Codex já está instalado de outro jeito e o comando `codex` funciona no terminal, não precisa instalar de novo.
 
 Funciona no Windows 11 (sem WSL), no Linux e no macOS.
 
@@ -77,6 +77,8 @@ O astra não atrapalha a abertura da sessão: sem Node, sem Codex ou sem login, 
 - Sem Codex: instale com `npm install -g @openai/codex`, faça login com `codex login` e peça de novo (ou informe o caminho na opção do Codex).
 - Sem login: rode `codex login` num terminal e peça de novo.
 
+No PowerShell do Windows, escreva esses dois comandos com `.cmd` no fim (`npm.cmd`, `codex.cmd`), como em "O que você precisa".
+
 ## Limites
 
 - Cada pedido a um agente do astra gasta do limite de uso da sua conta do ChatGPT no Codex, e não do Claude.
@@ -85,7 +87,7 @@ O astra não atrapalha a abertura da sessão: sem Node, sem Codex ou sem login, 
 - O Claude Code não conta a um plugin quais ferramentas um subagente recebeu. O astra reconhece a exigência da entrega pelo aviso que o próprio Claude Code escreve na conversa do subagente. Se uma versão nova do Claude Code mudar esse aviso, a entrega pode voltar a falhar, e quem chamou recebe a mensagem de que o agente terminou sem relatório.
 - Quando uma regra automática do Claude Code (um hook) devolve o trabalho a um agente do astra depois da resposta, por exemplo para pedir que ele confira algo antes de terminar, a mensagem dessa regra abre uma nova rodada do Codex na mesma conversa dele.
 - No Windows, o astra fala com o Codex por uma porta local (127.0.0.1) que só aceita pedidos com um segredo sorteado a cada sessão. No Linux e no macOS, por um arquivo de socket que só o seu usuário abre.
-- O astra guarda o vínculo entre cada agente e a conversa dele no Codex em `%LOCALAPPDATA%\alrix-astra\state` (Windows), `~/Library/Application Support/alrix-astra` (macOS) ou `~/.local/state/alrix-astra` (Linux). Nada vai para outro lugar.
+- O astra guarda o vínculo entre cada agente e a conversa dele no Codex em `%LOCALAPPDATA%\alrix-astra\state` (Windows), `~/Library/Application Support/alrix-astra` (macOS) ou `~/.local/state/alrix-astra` (Linux). O astra não manda nada para outro lugar. As conversas ficam também no histórico do próprio Codex, como as de qualquer uso dele.
 - O astra foi conferido contra o Codex 0.169.0. Com outra versão ele tenta do mesmo jeito, mas o que mudou no Codex desde então não foi conferido. Se algo parar de funcionar depois de atualizar o Codex, essa é a primeira coisa a olhar.
 
 ## Desligar
@@ -104,8 +106,8 @@ O astra responde também a tipos de agente que outro plugin define. O contrato �
 
 1. **Qualquer passo `gpt-*` vai ao Codex.** Todo passo cujo modelo começa com `gpt-` e um número (`gpt-6.2-astra`, `gpt-6.2-sol`), de qualquer plugin ou da conversa principal, é respondido pelo Codex. O modelo e o esforço que chegam ao Codex são os do passo.
 2. **O prompt do seu tipo chega ao Codex.** Registre o tipo com `$.agent.register({ name, description, prompt, model: 'gpt-6.2-astra', effort, tools })`. O astra lê o registro no evento `agent.register` e, no passo desse tipo, manda ao Codex como instrução primeiro o papel da ponte (`roles/bridge.md`, que explica as ferramentas do Claude Code) e depois o seu `prompt`, como você o escreveu. Um tipo que vem de um arquivo `agents/*.md` do seu plugin não passa por esse evento: ele roda só com o papel da ponte, sem o texto do arquivo, porque o motor não mostra o prompt de um tipo a outro plugin no passo.
-3. **O sandbox sai das ferramentas do tipo.** Se o `tools` do tipo não tem `Edit`, `Write`, `MultiEdit` nem `NotebookEdit` (ou os tira em `disallowedTools`), o Codex roda em `read-only`. Se tem alguma delas, ou se o tipo não diz as ferramentas, em `workspace-write` na pasta de trabalho. Um tipo de outro plugin nunca recebe acesso total, nem com a opção ligada. O catálogo de ferramentas do Claude Code que o Codex vê também fica restrito ao `tools` e ao `disallowedTools` do tipo.
-4. **A pasta de trabalho vem da linha `cwd:`.** Se a primeira linha do primeiro pedido do agente é `cwd: <caminho absoluto>` (`/caminho`, `C:\caminho` ou `C:/caminho`), o Codex trabalha nessa pasta, e a linha sai do pedido. Sem ela, vale a pasta da sessão. Um caminho que não existe faz o passo recusar, sem abrir o Codex.
+3. **O sandbox sai das ferramentas do tipo.** Se o `tools` do tipo não tem `Edit`, `Write`, `MultiEdit` nem `NotebookEdit` (ou os tira em `disallowedTools`), o Codex roda em `read-only`. Se tem alguma delas, ou se o tipo não diz as ferramentas, em `workspace-write` na pasta de trabalho. Um tipo de outro plugin nunca recebe acesso total, nem com a opção ligada. Isso vale para o tipo registrado com `$.agent.register`: o tipo que vem de um arquivo `agents/*.md` não mostra as ferramentas dele ao astra e roda em `workspace-write`, mesmo que o arquivo liste só ferramentas de leitura. Para um revisor que não pode gravar, registre o tipo. O catálogo de ferramentas do Claude Code que o Codex vê também fica restrito ao `tools` e ao `disallowedTools` do tipo.
+4. **A pasta de trabalho vem da linha `cwd:`.** Se a primeira linha do primeiro pedido do agente é `cwd: <caminho absoluto>` (`/caminho`, `C:\caminho` ou `C:/caminho`), o Codex trabalha nessa pasta em todos os passos do agente, e a linha sai do pedido. Sem ela, vale a pasta da sessão. Um caminho que não existe faz o passo recusar, sem abrir o Codex.
 
 5. **O comando `astra` diz que o astra está ligado.** Ao abrir a sessão, o astra registra o comando `/astra`. Para saber se ele está ligado, procure em `$.command.list()` um comando com `source: 'plugin'`, `name: 'astra'` e o `plugin` igual a `astra` ou começando por `astra@`. Com o astra desligado ou desinstalado, o comando não aparece.
 6. **A entrega do relatório vale para o seu tipo.** Quando o Claude Code exige que o subagente entregue o relatório pelo `SubagentHandback`, o astra faz a entrega também para os tipos de outros plugins: a resposta final do Codex vai inteira para quem chamou. Um gancho seu de `tool.call` sobre o `SubagentHandback` vê essa chamada como a de qualquer subagente.

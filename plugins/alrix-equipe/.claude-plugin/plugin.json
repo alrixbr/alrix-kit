@@ -1,6 +1,6 @@
 {
   "name": "alrix-equipe",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Monta especialistas sob medida para os seus projetos: o agente principal escreve uma ficha que o mod confere, você aprova com um clique, e cada especialista só escreve na pasta combinada, com o modelo e as skills que você liberou.",
   "author": { "name": "ALRIX" },
   "types": "./types/index.d.ts",

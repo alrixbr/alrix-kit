@@ -1,5 +1,6 @@
 {
   "name": "alrix",
+  "description": "Kit ALRIX para o Claude Code: especialistas com ficha e território (alrix-equipe), o Codex como agente (astra), modos para as mensagens (alrix-prompt) e a base do harness (alrix-base).",
   "owner": {
     "name": "ALRIX"
   },
